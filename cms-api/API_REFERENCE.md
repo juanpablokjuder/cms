@@ -1,10 +1,10 @@
 # CMS API — Reference Documentation
 
-> **Target audience:** AI agents and developers integrating with or building an admin UI on top of this API.  
-> **Base URL:** `http://localhost:3000/api/v1` (default; controlled by `PORT` and `API_PREFIX` env vars)  
-> **Protocol:** REST over HTTP/HTTPS  
-> **Content-Type:** `application/json` for all requests and responses  
-> **Auth scheme:** Bearer JWT (`Authorization: Bearer <token>`)  
+> **Target audience:** AI agents and developers integrating with or building an admin UI on top of this API.
+> **Base URL:** `http://localhost:3000/api/v1` (default; controlled by `PORT` and `API_PREFIX` env vars)
+> **Protocol:** REST over HTTP/HTTPS
+> **Content-Type:** `application/json` for all requests and responses
+> **Auth scheme:** Bearer JWT (`Authorization: Bearer <token>`)
 > **Token algorithm:** HS256 · Default TTL: `15m` (configurable via `JWT_EXPIRES_IN`)
 
 ---
@@ -14,6 +14,7 @@
 Every endpoint returns the same top-level wrapper.
 
 ### Success
+
 ```json
 {
   "success": true,
@@ -23,6 +24,7 @@ Every endpoint returns the same top-level wrapper.
 ```
 
 ### Error
+
 ```json
 {
   "success": false,
@@ -38,21 +40,22 @@ Every endpoint returns the same top-level wrapper.
 
 ### Error codes reference
 
-| HTTP | `code`             | Meaning                                      |
-|------|--------------------|----------------------------------------------|
-| 400  | `BAD_REQUEST`      | Invalid request (business rule violation)    |
-| 401  | `UNAUTHORIZED`     | Missing or invalid JWT                       |
-| 403  | `FORBIDDEN`        | Valid JWT but insufficient permissions       |
-| 404  | `NOT_FOUND`        | Resource does not exist                      |
+| HTTP | `code`             | Meaning                                            |
+| ---- | -------------------- | -------------------------------------------------- |
+| 400  | `BAD_REQUEST`      | Invalid request (business rule violation)          |
+| 401  | `UNAUTHORIZED`     | Missing or invalid JWT                             |
+| 403  | `FORBIDDEN`        | Valid JWT but insufficient permissions             |
+| 404  | `NOT_FOUND`        | Resource does not exist                            |
 | 409  | `CONFLICT`         | Unique constraint violation (e.g. duplicate email) |
-| 422  | `VALIDATION_ERROR` | Zod schema validation failure                |
-| 500  | `INTERNAL_ERROR`   | Unexpected server error                      |
+| 422  | `VALIDATION_ERROR` | Zod schema validation failure                      |
+| 500  | `INTERNAL_ERROR`   | Unexpected server error                            |
 
 ---
 
 ## Data Types
 
 ### `PublicUser` object
+
 Returned by all user-related endpoints. Never exposes `password_hash` or internal numeric `id`.
 
 ```json
@@ -67,17 +70,18 @@ Returned by all user-related endpoints. Never exposes `password_hash` or interna
 }
 ```
 
-| Field        | Type      | Notes                                  |
-|--------------|-----------|----------------------------------------|
-| `uuid`       | `string`  | UUID v4, used as public identifier     |
-| `name`       | `string`  | 2–150 characters                       |
-| `email`      | `string`  | Unique, stored lowercase               |
-| `role`       | `string`  | `"admin"` \| `"editor"` \| `"viewer"` |
-| `is_active`  | `number`  | `1` = active, `0` = deactivated (TINYINT from MariaDB) |
-| `created_at` | `string`  | ISO 8601 datetime                      |
-| `updated_at` | `string`  | ISO 8601 datetime                      |
+| Field          | Type       | Notes                                                      |
+| -------------- | ---------- | ---------------------------------------------------------- |
+| `uuid`       | `string` | UUID v4, used as public identifier                         |
+| `name`       | `string` | 2–150 characters                                          |
+| `email`      | `string` | Unique, stored lowercase                                   |
+| `role`       | `string` | `"admin"` \| `"editor"` \| `"viewer"`                |
+| `is_active`  | `number` | `1` = active, `0` = deactivated (TINYINT from MariaDB) |
+| `created_at` | `string` | ISO 8601 datetime                                          |
+| `updated_at` | `string` | ISO 8601 datetime                                          |
 
 ### `JwtPayload` (decoded token)
+
 ```json
 {
   "jti": "uuid-of-this-token",
@@ -93,11 +97,11 @@ Returned by all user-related endpoints. Never exposes `password_hash` or interna
 
 ## Roles & Permissions
 
-| Role       | Description                                              |
-|------------|----------------------------------------------------------|
-| `admin`    | Full access to all endpoints                             |
-| `editor`   | Can view own profile, update own profile                 |
-| `viewer`   | Can view own profile, update own profile                 |
+| Role       | Description                              |
+| ---------- | ---------------------------------------- |
+| `admin`  | Full access to all endpoints             |
+| `editor` | Can view own profile, update own profile |
+| `viewer` | Can view own profile, update own profile |
 
 > Non-admin users can only read or modify **their own** profile. They cannot change their own `role`.
 
@@ -112,6 +116,7 @@ Authenticates a user and returns a short-lived JWT.
 **Auth required:** No
 
 **Request body:**
+
 ```json
 {
   "email": "admin@example.com",
@@ -119,12 +124,13 @@ Authenticates a user and returns a short-lived JWT.
 }
 ```
 
-| Field      | Type     | Required | Rules                    |
-|------------|----------|----------|--------------------------|
-| `email`    | `string` | Yes      | Valid email format       |
-| `password` | `string` | Yes      | Non-empty                |
+| Field        | Type       | Required | Rules              |
+| ------------ | ---------- | -------- | ------------------ |
+| `email`    | `string` | Yes      | Valid email format |
+| `password` | `string` | Yes      | Non-empty          |
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -146,14 +152,15 @@ Authenticates a user and returns a short-lived JWT.
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                       |
-|------|--------------------|--------------------------------------------|
-| 401  | `UNAUTHORIZED`     | Email not found: `"Invalid email."`        |
-| 401  | `UNAUTHORIZED`     | Wrong password: `"Invalid password."`      |
-| 403  | `FORBIDDEN`        | Account deactivated: `"Your account has been deactivated."` |
-| 422  | `VALIDATION_ERROR` | Body fails schema validation               |
+| HTTP | `code`             | When                                                         |
+| ---- | -------------------- | ------------------------------------------------------------ |
+| 401  | `UNAUTHORIZED`     | Email not found:`"Invalid email."`                         |
+| 401  | `UNAUTHORIZED`     | Wrong password:`"Invalid password."`                       |
+| 403  | `FORBIDDEN`        | Account deactivated:`"Your account has been deactivated."` |
+| 422  | `VALIDATION_ERROR` | Body fails schema validation                                 |
 
 **Notes:**
+
 - The token expires in `JWT_EXPIRES_IN` (default `15m`). Store it and handle `401` responses to prompt re-login.
 - Use the token in subsequent requests via `Authorization: Bearer <token>` header.
 
@@ -168,6 +175,7 @@ Revokes the current token by adding its `jti` to a blocklist. The token becomes 
 **Request body:** None
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -178,9 +186,9 @@ Revokes the current token by adding its `jti` to a blocklist. The token becomes 
 
 **Possible errors:**
 
-| HTTP | `code`         | When                                 |
-|------|----------------|--------------------------------------|
-| 401  | `UNAUTHORIZED` | No token or token already revoked    |
+| HTTP | `code`         | When                              |
+| ---- | ---------------- | --------------------------------- |
+| 401  | `UNAUTHORIZED` | No token or token already revoked |
 
 ---
 
@@ -193,6 +201,7 @@ Returns the profile of the currently authenticated user.
 **Request body:** None
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -211,7 +220,7 @@ Returns the profile of the currently authenticated user.
 **Possible errors:**
 
 | HTTP | `code`         | When                              |
-|------|----------------|-----------------------------------|
+| ---- | ---------------- | --------------------------------- |
 | 401  | `UNAUTHORIZED` | No token or token revoked/expired |
 
 ---
@@ -230,18 +239,20 @@ Returns a paginated list of all users.
 
 **Query parameters:**
 
-| Param   | Type      | Default | Rules                     |
-|---------|-----------|---------|---------------------------|
-| `page`  | `integer` | `1`     | Positive integer          |
-| `limit` | `integer` | `20`    | Between 1 and 100         |
+| Param     | Type        | Default | Rules             |
+| --------- | ----------- | ------- | ----------------- |
+| `page`  | `integer` | `1`   | Positive integer  |
+| `limit` | `integer` | `20`  | Between 1 and 100 |
 
 **Example request:**
+
 ```
 GET /api/v1/users?page=1&limit=10
 Authorization: Bearer <token>
 ```
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -278,11 +289,11 @@ Authorization: Bearer <token>
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                  |
-|------|--------------------|---------------------------------------|
-| 401  | `UNAUTHORIZED`     | Not authenticated                     |
-| 403  | `FORBIDDEN`        | Authenticated but not admin           |
-| 422  | `VALIDATION_ERROR` | Invalid `page` or `limit` param       |
+| HTTP | `code`             | When                                |
+| ---- | -------------------- | ----------------------------------- |
+| 401  | `UNAUTHORIZED`     | Not authenticated                   |
+| 403  | `FORBIDDEN`        | Authenticated but not admin         |
+| 422  | `VALIDATION_ERROR` | Invalid `page` or `limit` param |
 
 ---
 
@@ -293,6 +304,7 @@ Creates a new user.
 **Auth required:** Yes — **admin only**
 
 **Request body:**
+
 ```json
 {
   "name": "Jane Doe",
@@ -302,14 +314,15 @@ Creates a new user.
 }
 ```
 
-| Field      | Type     | Required | Rules                                                                              |
-|------------|----------|----------|------------------------------------------------------------------------------------|
-| `name`     | `string` | Yes      | 2–150 characters                                                                   |
-| `email`    | `string` | Yes      | Valid email, must be unique (stored lowercase)                                     |
-| `password` | `string` | Yes      | 8–72 chars, must contain uppercase, lowercase, digit, and special character       |
-| `role`     | `string` | No       | `"admin"` \| `"editor"` \| `"viewer"` · defaults to `"viewer"`                   |
+| Field        | Type       | Required | Rules                                                                        |
+| ------------ | ---------- | -------- | ---------------------------------------------------------------------------- |
+| `name`     | `string` | Yes      | 2–150 characters                                                            |
+| `email`    | `string` | Yes      | Valid email, must be unique (stored lowercase)                               |
+| `password` | `string` | Yes      | 8–72 chars, must contain uppercase, lowercase, digit, and special character |
+| `role`     | `string` | No       | `"admin"` \| `"editor"` \| `"viewer"` · defaults to `"viewer"`      |
 
 **Success `201`:**
+
 ```json
 {
   "success": true,
@@ -328,14 +341,15 @@ Creates a new user.
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                      |
-|------|--------------------|-------------------------------------------|
-| 401  | `UNAUTHORIZED`     | Not authenticated                         |
-| 403  | `FORBIDDEN`        | Authenticated but not admin               |
+| HTTP | `code`             | When                                                 |
+| ---- | -------------------- | ---------------------------------------------------- |
+| 401  | `UNAUTHORIZED`     | Not authenticated                                    |
+| 403  | `FORBIDDEN`        | Authenticated but not admin                          |
 | 409  | `CONFLICT`         | `"A user with this email address already exists."` |
-| 422  | `VALIDATION_ERROR` | Body fails schema (see field rules above) |
+| 422  | `VALIDATION_ERROR` | Body fails schema (see field rules above)            |
 
 **Validation error example `422`:**
+
 ```json
 {
   "success": false,
@@ -358,17 +372,19 @@ Returns a single user by UUID.
 
 **Path parameter:**
 
-| Param  | Type   | Rules           |
-|--------|--------|-----------------|
-| `uuid` | `string` | Valid UUID v4  |
+| Param    | Type       | Rules         |
+| -------- | ---------- | ------------- |
+| `uuid` | `string` | Valid UUID v4 |
 
 **Example request:**
+
 ```
 GET /api/v1/users/550e8400-e29b-41d4-a716-446655440000
 Authorization: Bearer <token>
 ```
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -386,12 +402,12 @@ Authorization: Bearer <token>
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                          |
-|------|--------------------|-----------------------------------------------|
-| 401  | `UNAUTHORIZED`     | Not authenticated                             |
-| 403  | `FORBIDDEN`        | Authenticated but not admin or not self       |
-| 404  | `NOT_FOUND`        | `"User not found."`                           |
-| 422  | `VALIDATION_ERROR` | `:uuid` is not a valid UUID format            |
+| HTTP | `code`             | When                                    |
+| ---- | -------------------- | --------------------------------------- |
+| 401  | `UNAUTHORIZED`     | Not authenticated                       |
+| 403  | `FORBIDDEN`        | Authenticated but not admin or not self |
+| 404  | `NOT_FOUND`        | `"User not found."`                   |
+| 422  | `VALIDATION_ERROR` | `:uuid` is not a valid UUID format    |
 
 ---
 
@@ -399,16 +415,17 @@ Authorization: Bearer <token>
 
 Partially updates a user. All fields are optional; send only the ones to change.
 
-**Auth required:** Yes — **admin** or **the user themselves**  
+**Auth required:** Yes — **admin** or **the user themselves**
 **Restriction:** Non-admin users cannot change their own `role`.
 
 **Path parameter:**
 
-| Param  | Type     | Rules          |
-|--------|----------|----------------|
-| `uuid` | `string` | Valid UUID v4  |
+| Param    | Type       | Rules         |
+| -------- | ---------- | ------------- |
+| `uuid` | `string` | Valid UUID v4 |
 
 **Request body** (all fields optional, at least one expected):
+
 ```json
 {
   "name": "Jane Smith",
@@ -419,15 +436,16 @@ Partially updates a user. All fields are optional; send only the ones to change.
 }
 ```
 
-| Field       | Type      | Rules                                                                           |
-|-------------|-----------|---------------------------------------------------------------------------------|
-| `name`      | `string`  | 2–150 characters                                                                |
-| `email`     | `string`  | Valid email, must be unique                                                     |
-| `password`  | `string`  | 8–72 chars, must contain uppercase, lowercase, digit, and special character    |
-| `role`      | `string`  | `"admin"` \| `"editor"` \| `"viewer"` · **admin only**                        |
-| `is_active` | `boolean` | `true` to activate, `false` to deactivate                                      |
+| Field         | Type        | Rules                                                                        |
+| ------------- | ----------- | ---------------------------------------------------------------------------- |
+| `name`      | `string`  | 2–150 characters                                                            |
+| `email`     | `string`  | Valid email, must be unique                                                  |
+| `password`  | `string`  | 8–72 chars, must contain uppercase, lowercase, digit, and special character |
+| `role`      | `string`  | `"admin"` \| `"editor"` \| `"viewer"` · **admin only**          |
+| `is_active` | `boolean` | `true` to activate, `false` to deactivate                                |
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -446,14 +464,14 @@ Partially updates a user. All fields are optional; send only the ones to change.
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                                |
-|------|--------------------|-----------------------------------------------------|
-| 400  | `BAD_REQUEST`      | Non-admin trying to change own `role`               |
-| 401  | `UNAUTHORIZED`     | Not authenticated                                   |
-| 403  | `FORBIDDEN`        | Authenticated but not admin or not self             |
-| 404  | `NOT_FOUND`        | `"User not found."`                                 |
-| 409  | `CONFLICT`         | `"This email address is already in use."`           |
-| 422  | `VALIDATION_ERROR` | Body or `:uuid` param fails schema                  |
+| HTTP | `code`             | When                                        |
+| ---- | -------------------- | ------------------------------------------- |
+| 400  | `BAD_REQUEST`      | Non-admin trying to change own `role`     |
+| 401  | `UNAUTHORIZED`     | Not authenticated                           |
+| 403  | `FORBIDDEN`        | Authenticated but not admin or not self     |
+| 404  | `NOT_FOUND`        | `"User not found."`                       |
+| 409  | `CONFLICT`         | `"This email address is already in use."` |
+| 422  | `VALIDATION_ERROR` | Body or `:uuid` param fails schema        |
 
 ---
 
@@ -461,22 +479,24 @@ Partially updates a user. All fields are optional; send only the ones to change.
 
 Soft-deletes a user (sets `deleted_at`; record is retained in DB). The user will no longer appear in listings or be able to log in.
 
-**Auth required:** Yes — **admin only**  
+**Auth required:** Yes — **admin only**
 **Restriction:** Admins cannot delete their own account.
 
 **Path parameter:**
 
-| Param  | Type     | Rules          |
-|--------|----------|----------------|
-| `uuid` | `string` | Valid UUID v4  |
+| Param    | Type       | Rules         |
+| -------- | ---------- | ------------- |
+| `uuid` | `string` | Valid UUID v4 |
 
 **Example request:**
+
 ```
 DELETE /api/v1/users/550e8400-e29b-41d4-a716-446655440000
 Authorization: Bearer <token>
 ```
 
 **Success `200`:**
+
 ```json
 {
   "success": true,
@@ -487,13 +507,13 @@ Authorization: Bearer <token>
 
 **Possible errors:**
 
-| HTTP | `code`             | When                                              |
-|------|--------------------|---------------------------------------------------|
-| 400  | `BAD_REQUEST`      | `"You cannot delete your own account."`           |
-| 401  | `UNAUTHORIZED`     | Not authenticated                                 |
-| 403  | `FORBIDDEN`        | Authenticated but not admin                       |
-| 404  | `NOT_FOUND`        | `"User not found."`                               |
-| 422  | `VALIDATION_ERROR` | `:uuid` is not a valid UUID format                |
+| HTTP | `code`             | When                                      |
+| ---- | -------------------- | ----------------------------------------- |
+| 400  | `BAD_REQUEST`      | `"You cannot delete your own account."` |
+| 401  | `UNAUTHORIZED`     | Not authenticated                         |
+| 403  | `FORBIDDEN`        | Authenticated but not admin               |
+| 404  | `NOT_FOUND`        | `"User not found."`                     |
+| 422  | `VALIDATION_ERROR` | `:uuid` is not a valid UUID format      |
 
 ---
 
@@ -509,6 +529,7 @@ Authorization: Bearer <token>
 ```
 
 **Token expiry strategy:**
+
 - Default TTL is `15m`. Plan to handle `401 UNAUTHORIZED` by prompting re-login or implementing a refresh mechanism if one is added in the future.
 - After logout, the token is blocklisted immediately; do not reuse it.
 
@@ -516,33 +537,33 @@ Authorization: Bearer <token>
 
 ## Environment Variables
 
-| Variable              | Default         | Description                                     |
-|-----------------------|-----------------|-------------------------------------------------|
-| `PORT`                | `3000`          | HTTP port the server listens on                 |
-| `HOST`                | `0.0.0.0`       | Bind address                                    |
-| `API_PREFIX`          | `/api/v1`       | URL prefix for all routes                       |
-| `JWT_SECRET`          | —               | HS256 signing secret (min 32 chars, **required**) |
-| `JWT_EXPIRES_IN`      | `15m`           | Token lifetime (e.g. `15m`, `1h`, `7d`)        |
-| `BCRYPT_ROUNDS`       | `12`            | bcrypt cost factor (10–15)                      |
-| `DB_HOST`             | —               | MariaDB host (**required**)                     |
-| `DB_PORT`             | `3306`          | MariaDB port                                    |
-| `DB_NAME`             | —               | Database name (**required**)                    |
-| `DB_USER`             | —               | Database user (**required**)                    |
-| `DB_PASSWORD`         | —               | Database password                               |
-| `DB_CONNECTION_LIMIT` | `10`            | Connection pool size                            |
-| `NODE_ENV`            | `development`   | `development` \| `production` \| `test`        |
+| Variable                | Default         | Description                                            |
+| ----------------------- | --------------- | ------------------------------------------------------ |
+| `PORT`                | `3000`        | HTTP port the server listens on                        |
+| `HOST`                | `0.0.0.0`     | Bind address                                           |
+| `API_PREFIX`          | `/api/v1`     | URL prefix for all routes                              |
+| `JWT_SECRET`          | —              | HS256 signing secret (min 32 chars,**required**) |
+| `JWT_EXPIRES_IN`      | `15m`         | Token lifetime (e.g.`15m`, `1h`, `7d`)           |
+| `BCRYPT_ROUNDS`       | `12`          | bcrypt cost factor (10–15)                            |
+| `DB_HOST`             | —              | MariaDB host (**required**)                      |
+| `DB_PORT`             | `3306`        | MariaDB port                                           |
+| `DB_NAME`             | —              | Database name (**required**)                     |
+| `DB_USER`             | —              | Database user (**required**)                     |
+| `DB_PASSWORD`         | —              | Database password                                      |
+| `DB_CONNECTION_LIMIT` | `10`          | Connection pool size                                   |
+| `NODE_ENV`            | `development` | `development` \| `production` \| `test`          |
 
 ---
 
 ## Endpoint Summary Table
 
-| Method   | Path                        | Auth         | Role          | Description                  |
-|----------|-----------------------------|--------------|---------------|------------------------------|
-| `POST`   | `/api/v1/auth/login`        | No           | —             | Login, get JWT               |
-| `POST`   | `/api/v1/auth/logout`       | Yes          | any           | Revoke current token         |
-| `GET`    | `/api/v1/auth/me`           | Yes          | any           | Get own profile              |
-| `GET`    | `/api/v1/users`             | Yes          | admin         | List all users (paginated)   |
-| `POST`   | `/api/v1/users`             | Yes          | admin         | Create a user                |
-| `GET`    | `/api/v1/users/:uuid`       | Yes          | admin \| self | Get a user by UUID           |
-| `PATCH`  | `/api/v1/users/:uuid`       | Yes          | admin \| self | Partially update a user      |
-| `DELETE` | `/api/v1/users/:uuid`       | Yes          | admin         | Soft-delete a user           |
+| Method     | Path                    | Auth | Role         | Description                |
+| ---------- | ----------------------- | ---- | ------------ | -------------------------- |
+| `POST`   | `/api/v1/auth/login`  | No   | —           | Login, get JWT             |
+| `POST`   | `/api/v1/auth/logout` | Yes  | any          | Revoke current token       |
+| `GET`    | `/api/v1/auth/me`     | Yes  | any          | Get own profile            |
+| `GET`    | `/api/v1/users`       | Yes  | admin        | List all users (paginated) |
+| `POST`   | `/api/v1/users`       | Yes  | admin        | Create a user              |
+| `GET`    | `/api/v1/users/:uuid` | Yes  | admin\| self | Get a user by UUID         |
+| `PATCH`  | `/api/v1/users/:uuid` | Yes  | admin\| self | Partially update a user    |
+| `DELETE` | `/api/v1/users/:uuid` | Yes  | admin        | Soft-delete a user         |
