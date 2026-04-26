@@ -6,6 +6,8 @@ import { env } from './config/env.js';
 import { errorHandler } from './shared/middlewares/error-handler.middleware.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { userRoutes } from './modules/users/user.routes.js';
+import { archivoRoutes } from './modules/archivos/archivo.routes.js';
+import { bannerRoutes } from './modules/banners/banner.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -77,6 +79,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   // ── Feature routes ────────────────────────────────────────────────────────────
   await app.register(authRoutes, { prefix: `${env.API_PREFIX}/auth` });
   await app.register(userRoutes, { prefix: `${env.API_PREFIX}/users` });
+  await app.register(archivoRoutes, { prefix: `${env.API_PREFIX}/archivos` });
+  await app.register(bannerRoutes, { prefix: `${env.API_PREFIX}/banners` });
 
   return app;
 }

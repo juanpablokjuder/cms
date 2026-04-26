@@ -30,6 +30,9 @@ const envSchema = z.object({
 
   // API
   API_PREFIX: z.string().default('/api/v1'),
+
+  // File uploads
+  UPLOADS_DIR: z.string().default('uploads'),
 });
 const result = envSchema.safeParse(process.env);
 
