@@ -21,7 +21,7 @@ export class UserRepository {
   ): Promise<PaginatedResult<PublicUser>> {
     const { page, limit } = opts;
     const offset = (page - 1) * limit;
-
+   
     // COUNT query (no LIMIT needed)
     const countRows = await db.query<[{ total: number }]>(
       'SELECT COUNT(*) AS total FROM users WHERE deleted_at IS NULL',

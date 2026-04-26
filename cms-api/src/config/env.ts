@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // ─── Validation schema ────────────────────────────────────────────────────────
 const envSchema = z.object({
@@ -28,7 +31,6 @@ const envSchema = z.object({
   // API
   API_PREFIX: z.string().default('/api/v1'),
 });
-console.log("ENV: ", process.env); // Debug: log raw environment variables
 const result = envSchema.safeParse(process.env);
 
 if (!result.success) {

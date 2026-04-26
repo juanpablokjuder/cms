@@ -34,10 +34,12 @@ export class AuthService {
         ? await bcrypt.compare(dto.password, user.password_hash)
         : await bcrypt.compare(dto.password, '$2b$12$invalidhashpadding000000000000000000000000000000000000000');
 
-    if (!user || !passwordMatch) {
-      throw AppError.unauthorized('Invalid email or password.');
+    if (!user) {
+      throw AppError.unauthorized('Invalid email.');
     }
-
+  if (!passwordMatch) {
+      throw AppError.unauthorized('Invalid password.');
+    }
     if (!user.is_active) {
       throw AppError.forbidden('Your account has been deactivated.');
     }

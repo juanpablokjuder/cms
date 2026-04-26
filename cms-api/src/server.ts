@@ -8,13 +8,6 @@
  *  4. Handle graceful shutdown on SIGINT / SIGTERM
  */
 
-// Load .env file only in non-production environments.
-// In production, variables are injected by the host/container.
-if (process.env['NODE_ENV'] !== 'production') {
-  const { default: dotenv } = await import('dotenv');
-  dotenv.config();
-}
-
 import { buildApp } from './app.js';
 import { env } from './config/env.js';
 import { db } from './database/connection.js';
