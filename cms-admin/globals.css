@@ -1,0 +1,176 @@
+/* ============================================================
+   GLOBAL CSS — CMS Admin Design System
+   Tokens → Variables CSS → Componentes
+   NUNCA estilos en línea. NUNCA valores mágicos en componentes.
+   ============================================================ */
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+
+  /* Fuentes */
+  --font-display: var(--font-outfit), 'Outfit', system-ui, sans-serif;
+  --font-body:    var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  --font-mono:    'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  /* Escala tipográfica */
+  --text-xs:   0.6875rem; /* 11px */
+  --text-sm:   0.8125rem; /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-md:   1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+
+  /* Pesos */
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extrabold:800;
+
+  /* Paleta — Content area (fondo claro) */
+  --color-bg:           #f5f5f4;      /* warm stone-100 */
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f7f7f6;
+  --color-border:       rgba(0, 0, 0, 0.07);
+  --color-border-strong:rgba(0, 0, 0, 0.14);
+
+  /* Texto */
+  --color-text-primary:  #18181b;
+  --color-text-secondary:#52525b;
+  --color-text-muted:    #a1a1aa;
+  --color-text-inverse:  #ffffff;
+
+  /* Acento — Indigo vibrante (distinto del azul genérico) */
+  --color-accent:        #4f46e5;
+  --color-accent-hover:  #4338ca;
+  --color-accent-active: #3730a3;
+  --color-accent-light:  #eef2ff;
+  --color-accent-border: #c7d2fe;
+  --color-accent-text:   #4338ca;
+
+  /* Semánticos */
+  --color-success:       #16a34a;
+  --color-success-light: #f0fdf4;
+  --color-success-border:#bbf7d0;
+  --color-warning:       #d97706;
+  --color-warning-light: #fffbeb;
+  --color-warning-border:#fde68a;
+  --color-danger:        #dc2626;
+  --color-danger-light:  #fef2f2;
+  --color-danger-border: #fecaca;
+
+  /* Sidebar (dark panel) */
+  --sidebar-bg:           #0d1117;
+  --sidebar-border:       rgba(255, 255, 255, 0.06);
+  --sidebar-text:         #8b949e;
+  --sidebar-text-hover:   #f0f6fc;
+  --sidebar-section-text: rgba(255, 255, 255, 0.28);
+  --sidebar-item-hover-bg:rgba(255, 255, 255, 0.05);
+  --sidebar-active-bg:    rgba(79, 70, 229, 0.14);
+  --sidebar-active-text:  #a5b4fc;
+  --sidebar-active-border:#4f46e5;
+  --sidebar-width:        252px;
+
+  /* Header */
+  --header-height:     58px;
+  --header-bg:         #ffffff;
+  --header-border:     rgba(0, 0, 0, 0.07);
+
+  /* Espaciado (base 4px) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radios */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+
+  /* Transiciones */
+  --transition-fast: 80ms ease;
+  --transition:      150ms ease;
+  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+a    { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+img, svg { display: block; max-width: 100%; }
+ul, ol { list-style: none; }
+
+/* Scroll global con estilo */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ── Utilidades globales ────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible accesible */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
