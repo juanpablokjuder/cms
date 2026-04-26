@@ -110,7 +110,45 @@ const Api = (() => {
         });
     }
 
-    return { request, login, logout, getMe, getUsers, getUser, createUser, updateUser, deleteUser };
+    // ─── Banners ──────────────────────────────────────
+    async function getBanners(page = 1, limit = 20) {
+        return request('api/proxy-banners-list.php', {
+            params: { page, limit },
+        });
+    }
+
+    async function getBanner(uuid) {
+        return request('api/proxy-banners-get.php', {
+            params: { uuid },
+        });
+    }
+
+    async function createBanner(bannerData) {
+        return request('api/proxy-banners-create.php', {
+            method: 'POST',
+            body: bannerData,
+        });
+    }
+
+    async function updateBanner(uuid, bannerData) {
+        return request('api/proxy-banners-update.php', {
+            method: 'POST',
+            body: { uuid, ...bannerData },
+        });
+    }
+
+    async function deleteBanner(uuid) {
+        return request('api/proxy-banners-delete.php', {
+            method: 'POST',
+            body: { uuid },
+        });
+    }
+
+    return {
+        request, login, logout, getMe,
+        getUsers, getUser, createUser, updateUser, deleteUser,
+        getBanners, getBanner, createBanner, updateBanner, deleteBanner,
+    };
 })();
 
 /**
