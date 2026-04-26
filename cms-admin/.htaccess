@@ -1,0 +1,32 @@
+# CMS Admin — Apache Security Configuration
+
+# Prevent directory browsing
+Options -Indexes
+
+# Deny access to sensitive files
+<FilesMatch "\.(php|ini|log|env|md)$">
+    # Allow PHP files to be served (but not .ini, .log, .env, .md)
+</FilesMatch>
+
+# Protect config and includes directories
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to config/ and includes/ from browser
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^includes/ - [F,L]
+
+    # Block access to hidden files
+    RewriteRule (^\.|/\.) - [F,L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Charset
+AddDefaultCharset UTF-8
