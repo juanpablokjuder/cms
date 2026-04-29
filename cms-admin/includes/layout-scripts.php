@@ -2,7 +2,7 @@
 /**
  * CMS Admin — Layout Scripts Partial
  * 
- * Sidebar toggle logic. Include at the bottom of every dashboard page.
+ * Sidebar toggle logic + theme toggle. Include at the bottom of every dashboard page.
  */
 ?>
 <script>
@@ -18,3 +18,4 @@ document.getElementById('sidebar-overlay').addEventListener('click', () => {
     document.getElementById('app-layout').classList.remove('sidebar-mobile-open');
 });
 </script>
+<script src="assets/js/theme.js"></script>

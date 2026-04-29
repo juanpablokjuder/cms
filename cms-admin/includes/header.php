@@ -11,6 +11,10 @@
         <h1 class="header-title"><?php echo htmlspecialchars($headerTitle ?? 'CMS Admin'); ?></h1>
     </div>
     <div class="header-right">
+        <button class="btn-theme-toggle" id="js-theme-toggle" aria-label="Cambiar a tema claro" title="Cambiar tema">
+            <span class="icon-sun" aria-hidden="true">☀</span>
+            <span class="icon-moon" aria-hidden="true">☾</span>
+        </button>
         <div class="header-user">
             <div class="header-avatar"><?php echo htmlspecialchars($initials ?? ''); ?></div>
             <div class="header-user-info">
