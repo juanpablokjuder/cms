@@ -1,24 +1,22 @@
 <?php
-/**
- * CMS Admin Panel — Helper Functions
- * 
- * Provides the core apiRequest() wrapper for calling the REST API,
- * authentication checks, and utility functions used across the app.
- */
+/*
+
+CMS Admin Panel — Helper Functions
+Provides the core apiRequest() wrapper for calling the REST API,
+authentication checks, and utility functions used across the app.*/
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/app.php';
 
-/**
- * Make an HTTP request to the REST API via cURL.
- *
- * @param string      $method   HTTP method (GET, POST, PATCH, DELETE)
- * @param string      $endpoint API endpoint path (e.g. "/auth/login")
- * @param array|null  $data     Request body (for POST/PATCH)
- * @param string|null $token    JWT token override (defaults to session token)
- * @return array{httpCode: int, body: array}
- */
+/*
+
+Make an HTTP request to the REST API via cURL.*
+@param string      $method   HTTP method (GET, POST, PATCH, DELETE)
+@param string      $endpoint API endpoint path (e.g. "/auth/login")
+@param array|null  $data     Request body (for POST/PATCH)
+@param string|null $token    JWT token override (defaults to session token)
+@return array{httpCode: int, body: array}*/
 function apiRequest(string $method, string $endpoint, ?array $data = null, ?string $token = null): array
 {
     $url = API_BASE_URL . $endpoint;
@@ -36,12 +34,12 @@ function apiRequest(string $method, string $endpoint, ?array $data = null, ?stri
     }
 
     curl_setopt_array($ch, [
-        CURLOPT_URL            => $url,
+        CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_TIMEOUT => 15,
         CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_HTTPHEADER     => $headers,
-        CURLOPT_CUSTOMREQUEST  => strtoupper($method),
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_CUSTOMREQUEST => strtoupper($method),
     ]);
 
     if ($data !== null && in_array(strtoupper($method), ['POST', 'PATCH', 'PUT'], true)) {
@@ -62,10 +60,10 @@ function apiRequest(string $method, string $endpoint, ?array $data = null, ?stri
         curl_close($ch);
         return [
             'httpCode' => 0,
-            'body'     => [
+            'body' => [
                 'success' => false,
                 'message' => 'Error de conexión con el servidor: ' . $error,
-                'code'    => 'CONNECTION_ERROR',
+                'code' => 'CONNECTION_ERROR',
             ],
         ];
     }
@@ -76,21 +74,20 @@ function apiRequest(string $method, string $endpoint, ?array $data = null, ?stri
 
     return [
         'httpCode' => $httpCode,
-        'body'     => $body,
+        'body' => $body,
     ];
 }
+/*
 
-/**
- * Check if the current session has a valid token stored.
- */
+Check if the current session has a valid token stored.*/
 function isAuthenticated(): bool
 {
     return !empty($_SESSION['token']) && !empty($_SESSION['user']);
 }
 
-/**
- * Guard: redirect to login if not authenticated.
- */
+/*
+
+Guard: redirect to login if not authenticated.*/
 function requireAuth(): void
 {
     if (!isAuthenticated()) {
@@ -99,19 +96,18 @@ function requireAuth(): void
     }
 }
 
-/**
- * Get the current authenticated user data from session.
- *
- * @return array|null PublicUser object or null
- */
+/*
+
+Get the current authenticated user data from session.*
+@return array|null PublicUser object or null*/
 function getCurrentUser(): ?array
 {
     return $_SESSION['user'] ?? null;
 }
 
-/**
- * Send a JSON response and terminate.
- */
+/*
+
+Send a JSON response and terminate.*/
 function jsonResponse(array $data, int $code = 200): void
 {
     http_response_code($code);
@@ -119,18 +115,17 @@ function jsonResponse(array $data, int $code = 200): void
     echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
+/*
 
-/**
- * Sanitize a string input for safe output.
- */
+Sanitize a string input for safe output.*/
 function sanitizeInput(string $input): string
 {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
-/**
- * Destroy the current session completely.
- */
+/*
+
+Destroy the current session completely.*/
 function destroySession(): void
 {
     $_SESSION = [];

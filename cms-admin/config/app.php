@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 // ─── API Connection ─────────────────────────────────────────
-define('API_BASE_URL', 'http://localhost:3000/api/v1');
+define('API_BASE_URL', 'http://192.168.1.38:3000/api/v1');
 
 // ─── Application ────────────────────────────────────────────
 define('APP_NAME', 'CMS Admin');
@@ -26,9 +26,9 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.gc_maxlifetime', (string) SESSION_LIFETIME);
     session_set_cookie_params([
         'lifetime' => SESSION_LIFETIME,
-        'path'     => '/',
-        'httponly'  => true,
-        'samesite'  => 'Strict',
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Strict',
     ]);
     session_start();
 }
