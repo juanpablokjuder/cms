@@ -31,23 +31,21 @@ export class ArchivoController {
    * GET /archivos/:slug
    * Public: stream the physical file back to the client.
    */
-  async serve(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+async serve(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const { slug } = slugParamSchema.parse(request.params);
     const archivo = await this.service.findBySlug(slug);
 
     const diskPath = join(this.service.uploadsDir, archivo.path);
-
     try {
       await access(diskPath);
     } catch {
       throw AppError.notFound('File');
     }
 
-    const mime =
-      FORMATO_TO_MIME[archivo.formato] ?? 'application/octet-stream';
-
-    void reply
+    const mime = FORMATO_TO_MIME[archivo.formato] ?? 'application/octet-stream';
+    return reply
       .header('Content-Type', mime)
+      .header('Cross-Origin-Resource-Policy', 'cross-origin')
       .header('Cache-Control', 'public, max-age=31536000, immutable')
       .send(createReadStream(diskPath));
   }

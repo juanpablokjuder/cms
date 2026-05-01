@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════════════
+   CMS Admin — Servicios Module Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Table thumbnail ─────────────────────────────────── */
+.servicio-thumb {
+    width: 72px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    display: block;
+}
+.servicio-thumb-empty {
+    width: 72px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-tertiary);
+}
+
+/* ─── Estado badges ─────────────────────────────────────── */
+.badge-activo      { background: var(--color-success-subtle, #d1fae5); color: #065f46; }
+.badge-inactivo    { background: var(--color-warning-subtle, #fef3c7); color: #92400e; }
+.badge-no_mostrar  { background: var(--color-bg-tertiary); color: var(--color-text-tertiary); }

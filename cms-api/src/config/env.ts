@@ -31,6 +31,13 @@ const envSchema = z.object({
   // API
   API_PREFIX: z.string().default('/api/v1'),
 
+  // URL pública de la API (usada para construir URLs absolutas en las respuestas JSON)
+  // Ejemplo: http://192.168.0.20:3000
+  PUBLIC_API_URL: z
+    .string()
+    .url('PUBLIC_API_URL must be a valid URL (e.g. http://192.168.0.20:3000)')
+    .default('http://localhost:3000'),
+
   // File uploads
   UPLOADS_DIR: z.string().default('uploads'),
 });

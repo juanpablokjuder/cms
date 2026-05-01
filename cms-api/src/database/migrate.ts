@@ -24,7 +24,24 @@ async function run(): Promise<void> {
   for (const file of files) {
     const sql = await readFile(join(MIGRATIONS_DIR, file), 'utf-8');
     console.log(`  ▶  ${file}`);
-    await db.query(sql);
+
+    // Dividir en sentencias individuales para respetar multipleStatements:false.
+    // Elimina líneas de comentario (--) antes de dividir por ; para evitar
+    // que fragmentos de comentarios se envíen como SQL.
+    const stripped = sql
+      .split('\n')
+      .filter((line) => !line.trimStart().startsWith('--'))
+      .join('\n');
+
+    const statements = stripped
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    for (const stmt of statements) {
+      await db.query(stmt);
+    }
+
     console.log(`  ✅  ${file} — done`);
   }
 

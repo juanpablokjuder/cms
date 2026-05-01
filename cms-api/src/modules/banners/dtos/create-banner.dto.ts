@@ -21,6 +21,8 @@ export const createBannerSchema = z.object({
 
   imagen_alt: z.string().trim().max(255).nullable().optional(),
   imagen_title: z.string().trim().max(255).nullable().optional(),
+  /** Nombre del archivo de imagen (sin extensión). Usado como base para el slug. */
+  imagen_nombre: z.string().trim().max(200).nullable().optional(),
 
   h1: z
     .string({ required_error: 'H1 is required.' })

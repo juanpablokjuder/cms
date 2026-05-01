@@ -21,6 +21,14 @@ export const createArchivoSchema = z.object({
         `Accepted types: ${ACCEPTED_MIME_TYPES.join(', ')}.`,
     ),
 
+  /** Nombre deseado para el archivo (sin extensión). Se usa como base para generar el slug. */
+  nombre: z
+    .string()
+    .trim()
+    .max(200, 'Nombre cannot exceed 200 characters.')
+    .nullable()
+    .optional(),
+
   alt: z
     .string()
     .trim()

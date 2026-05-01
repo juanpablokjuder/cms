@@ -9,7 +9,7 @@
 declare(strict_types=1);
 
 // ─── API Connection ─────────────────────────────────────────
-define('API_BASE_URL', 'http://192.168.1.38:3000/api/v1');
+define('API_BASE_URL', 'http://192.168.0.20:3000/api/v1');
 
 // ─── Application ────────────────────────────────────────────
 define('APP_NAME', 'CMS Admin');

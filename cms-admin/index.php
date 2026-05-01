@@ -10,9 +10,11 @@ $pageTitle = 'Dashboard';
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <?php require_once __DIR__ . '/includes/head.php'; ?>
 </head>
+
 <body>
     <div class="app-layout" id="app-layout">
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -22,7 +24,8 @@ $pageTitle = 'Dashboard';
         <main class="main-content">
             <div class="page-header">
                 <div class="page-header-left">
-                    <h2 class="page-title">Bienvenido, <?php echo htmlspecialchars(explode(' ', $user['name'] ?? 'Admin')[0]); ?></h2>
+                    <h2 class="page-title">Bienvenido,
+                        <?php echo htmlspecialchars(explode(' ', $user['name'] ?? 'Admin')[0]); ?></h2>
                     <p class="page-subtitle">Resumen general del sistema</p>
                 </div>
             </div>
@@ -59,7 +62,9 @@ $pageTitle = 'Dashboard';
             </div>
 
             <div style="margin-top:var(--space-8)">
-                <h3 style="font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin-bottom:var(--space-4);">Acciones Rápidas</h3>
+                <h3
+                    style="font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);margin-bottom:var(--space-4);">
+                    Acciones Rápidas</h3>
                 <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
                     <a href="users.php" class="btn btn-secondary"><span>👥</span><span>Gestionar Usuarios</span></a>
                     <a href="banners.php" class="btn btn-secondary"><span>🖼️</span><span>Gestionar Banners</span></a>
@@ -82,8 +87,9 @@ $pageTitle = 'Dashboard';
                     document.getElementById('stat-active-users').textContent = users.filter(u => u.is_active).length;
                     document.getElementById('stat-admin-count').textContent = users.filter(u => u.role === 'admin').length;
                 }
-            } catch (e) {}
+            } catch (e) { }
         })();
     </script>
 </body>
+
 </html>

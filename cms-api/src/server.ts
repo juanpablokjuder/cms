@@ -11,6 +11,7 @@
 import { buildApp } from './app.js';
 import { env } from './config/env.js';
 import { db } from './database/connection.js';
+import { logError } from './shared/utils/error-logger.js';
 
 const app = await buildApp();
 
@@ -29,8 +30,31 @@ async function shutdown(signal: string): Promise<void> {
   }
 }
 
-process.on('SIGINT', () => void shutdown('SIGINT'));
+process.on('SIGINT',  () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
+
+// ── Errores no capturados a nivel de proceso ──────────────────────────────────
+// Estos manejadores capturan errores que escapan al error handler de Fastify:
+// - Promesas rechazadas sin .catch()
+// - Excepciones síncronas fuera de cualquier handler
+
+process.on('unhandledRejection', (reason, promise) => {
+  app.log.error({ reason, promise }, 'Unhandled promise rejection');
+  void logError(reason instanceof Error ? reason : new Error(String(reason)), {
+    level: 'error',
+    context: { source: 'unhandledRejection' },
+  });
+});
+
+process.on('uncaughtException', (err) => {
+  app.log.error(err, 'Uncaught exception — the process may be in an unstable state');
+  void logError(err, {
+    level: 'error',
+    context: { source: 'uncaughtException' },
+  });
+  // Dar tiempo al logger para escribir en BD antes de terminar
+  setTimeout(() => process.exit(1), 500);
+});
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 

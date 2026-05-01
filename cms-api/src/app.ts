@@ -9,6 +9,9 @@ import { userRoutes } from './modules/users/user.routes.js';
 import { archivoRoutes } from './modules/archivos/archivo.routes.js';
 import { bannerRoutes } from './modules/banners/banner.routes.js';
 import { noticiaRoutes } from './modules/noticias/noticia.routes.js';
+import { nosotrosRoutes } from './modules/nosotros/nosotros.routes.js';
+import { errorLogRoutes } from './modules/error-logs/error-log.routes.js';
+import { servicioRoutes } from './modules/servicios/servicio.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -64,7 +67,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(userRoutes,    { prefix: `${env.API_PREFIX}/users` });
   await app.register(archivoRoutes, { prefix: `${env.API_PREFIX}/archivos` });
   await app.register(bannerRoutes,  { prefix: `${env.API_PREFIX}/banners` });
-  await app.register(noticiaRoutes, { prefix: `${env.API_PREFIX}/noticias` });
+  await app.register(noticiaRoutes,   { prefix: `${env.API_PREFIX}/noticias` });
+  await app.register(nosotrosRoutes,  { prefix: `${env.API_PREFIX}/nosotros` });
+  await app.register(errorLogRoutes,  { prefix: `${env.API_PREFIX}/error-logs` });
+  await app.register(servicioRoutes,  { prefix: env.API_PREFIX });
 
   return app;
 }

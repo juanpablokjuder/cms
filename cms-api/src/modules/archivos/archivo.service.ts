@@ -47,7 +47,8 @@ export class ArchivoService {
   async create(dto: CreateArchivoDTO): Promise<ArchivoRow> {
     const { formato, buffer } = parseDataUri(dto.imagen);
 
-    const baseLabel = dto.title ?? dto.alt ?? 'archivo';
+    // Prioridad para el slug: nombre > title > alt > 'archivo'
+    const baseLabel = dto.nombre ?? dto.title ?? dto.alt ?? 'archivo';
     const slug = await this.uniqueSlug(slugify(baseLabel));
     const filename = `${slug}.${formato}`;
 

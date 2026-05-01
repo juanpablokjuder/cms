@@ -11,10 +11,10 @@ import type {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Builds the public imagen URL from a slug, or returns null. */
+/** Builds the public imagen URL absoluta desde un slug, o retorna null. */
 function buildImagenUrl(slug: string | null): string | null {
   if (!slug) return null;
-  return `${env.API_PREFIX}/archivos/${slug}`;
+  return `${env.PUBLIC_API_URL}${env.API_PREFIX}/archivos/${slug}`;
 }
 
 /** Intermediate query row that includes the joined archivo slug. */

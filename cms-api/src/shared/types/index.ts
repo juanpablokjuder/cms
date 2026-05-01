@@ -123,3 +123,204 @@ export interface ApiErrorResponse {
   errors?: Record<string, string[]>;
   code?: string;
 }
+
+// ─── Noticia ──────────────────────────────────────────────────────────────────
+
+export interface NoticiaRow {
+  id:         number;
+  uuid:       string;
+  titulo:     string;
+  subtitulo:  string | null;
+  slug:       string;
+  texto:      string;
+  deleted_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface NoticiaImagenItem {
+  archivo_uuid: string;
+  url:          string;
+  alt:          string | null;
+  title:        string | null;
+  orden:        number;
+}
+
+export interface PublicNoticia {
+  uuid:      string;
+  titulo:    string;
+  subtitulo: string | null;
+  slug:      string;
+  texto:     string;
+  imagenes:  NoticiaImagenItem[];
+  created_at: Date;
+  updated_at: Date;
+}
+
+// ─── Nosotros ─────────────────────────────────────────────────────────────────
+
+export interface NosotrosRow {
+  id:         number;
+  uuid:       string;
+  titulo:     string;
+  subtitulo:  string | null;
+  texto:      string;
+  deleted_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface NosotrosImagenItem {
+  archivo_uuid: string;
+  url:          string;
+  alt:          string | null;
+  title:        string | null;
+  orden:        number;
+}
+
+export interface PublicNosotros {
+  uuid:       string;
+  titulo:     string;
+  subtitulo:  string | null;
+  texto:      string;
+  imagenes:   NosotrosImagenItem[];
+  created_at: Date;
+  updated_at: Date;
+}
+
+// ─── Moneda ───────────────────────────────────────────────────────────────────
+
+export interface MonedaRow {
+  id:     number;
+  uuid:   string;
+  codigo: string;
+  nombre: string;
+}
+
+export type PublicMoneda = MonedaRow;
+
+// ─── Servicios (singleton principal) ─────────────────────────────────────────
+
+export interface ServicioRow {
+  id:         number;
+  uuid:       string;
+  titulo:     string;
+  subtitulo:  string | null;
+  deleted_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type PublicServicio = Omit<ServicioRow, 'id' | 'deleted_at'>;
+
+// ─── Servicios Categorías ─────────────────────────────────────────────────────
+
+export interface ServicioCategoriaRow {
+  id:         number;
+  uuid:       string;
+  nombre:     string;
+  orden:      number;
+  estado:     number; // 1=activo, 0=inactivo (TINYINT)
+  deleted_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type PublicServicioCategoria = Omit<ServicioCategoriaRow, 'id' | 'deleted_at'>;
+
+// ─── Servicios Items ──────────────────────────────────────────────────────────
+
+export type EstadoItem = 'activo' | 'inactivo' | 'no_mostrar';
+
+export interface ServicioItemRow {
+  id:           number;
+  uuid:         string;
+  categoria_id: number | null;
+  titulo:       string;
+  subtitulo_1:  string | null;
+  subtitulo_2:  string | null;
+  precio:       string | null; // DECIMAL comes back as string from MariaDB
+  moneda_id:    number | null;
+  btn_titulo:   string | null;
+  btn_link:     string | null;
+  texto:        string | null;
+  estado:       EstadoItem;
+  deleted_at:   Date | null;
+  created_at:   Date;
+  updated_at:   Date;
+}
+
+export interface ServicioItemImagenItem {
+  archivo_uuid: string;
+  url:          string;
+  alt:          string | null;
+  title:        string | null;
+  orden:        number;
+}
+
+export interface PublicServicioItem {
+  uuid:           string;
+  categoria_uuid: string | null;
+  titulo:         string;
+  subtitulo_1:    string | null;
+  subtitulo_2:    string | null;
+  precio:         string | null;
+  moneda:         PublicMoneda | null;
+  btn_titulo:     string | null;
+  btn_link:       string | null;
+  texto:          string | null;
+  estado:         EstadoItem;
+  imagenes:       ServicioItemImagenItem[];
+  created_at:     Date;
+  updated_at:     Date;
+}
+
+// ─── Error Logs ───────────────────────────────────────────────────────────────
+
+export type LogLevel = 'error' | 'warn' | 'info';
+
+export interface ErrorLogRow {
+  uuid:           string;
+  level:          LogLevel;
+  error_type:     string;
+  error_code:     string | null;
+  status_code:    number | null;
+  message:        string;
+  stack_trace:    string | null;
+  http_method:    string | null;
+  url:            string | null;
+  route:          string | null;
+  user_uuid:      string | null;
+  user_role:      string | null;
+  ip_address:     string | null;
+  user_agent:     string | null;
+  request_body:   string | null;  // JSON serializado
+  request_params: string | null;  // JSON serializado
+  request_query:  string | null;  // JSON serializado
+  context:        string | null;  // JSON serializado
+  hostname:       string | null;
+  node_env:       string | null;
+  created_at:     Date;
+}
+
+export interface ErrorLogFilters {
+  page:        number;
+  limit:       number;
+  level?:      LogLevel;
+  statusCode?: number;
+  errorCode?:  string;
+  userUuid?:   string;
+  from?:       Date;
+  to?:         Date;
+}
+
+export interface PaginatedErrorLogs {
+  data: ErrorLogRow[];
+  meta: {
+    total:      number;
+    page:       number;
+    limit:      number;
+    totalPages: number;
+  };
+}
+

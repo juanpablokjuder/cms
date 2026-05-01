@@ -16,6 +16,14 @@ export const updateArchivoSchema = z.object({
     )
     .optional(),
 
+  /** Nombre deseado para el archivo (sin extensión). Si se provee junto con imagen, regenera el slug. */
+  nombre: z
+    .string()
+    .trim()
+    .max(200, 'Nombre cannot exceed 200 characters.')
+    .nullable()
+    .optional(),
+
   alt: z
     .string()
     .trim()

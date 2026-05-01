@@ -2,15 +2,17 @@ import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
 import { AppError } from '../utils/app-error.js';
 import { apiError } from '../utils/api-response.js';
+import { logError } from '../utils/error-logger.js';
 
 /**
  * Global Fastify error handler.
  * Normalises AppError, ZodError, and all other errors into the
  * standard `{ success: false, message, code }` envelope.
+ * Registra todos los errores en la tabla `error_logs` de la BD.
  */
 export function errorHandler(
   error: FastifyError | Error,
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ): void {
   // ── Zod validation errors ─────────────────────────────────────────────────
@@ -21,6 +23,9 @@ export function errorHandler(
       fieldErrors[key] ??= [];
       fieldErrors[key].push(issue.message);
     }
+
+    void logError(error, { request, statusCode: 422, level: 'warn' });
+
     void reply.code(422).send(
       apiError('Validation failed.', { errors: fieldErrors, code: 'VALIDATION_ERROR' }),
     );
@@ -29,6 +34,14 @@ export function errorHandler(
 
   // ── Application domain errors ─────────────────────────────────────────────
   if (error instanceof AppError) {
+    // Sólo logueamos como 'warn' los errores de dominio esperados (4xx).
+    // Los 5xx inesperados se loguean como 'error'.
+    void logError(error, {
+      request,
+      statusCode: error.statusCode,
+      level: error.statusCode >= 500 ? 'error' : 'warn',
+    });
+
     void reply
       .code(error.statusCode)
       .send(apiError(error.message, { code: error.code }));
@@ -40,6 +53,12 @@ export function errorHandler(
     'statusCode' in error && typeof error.statusCode === 'number'
       ? error.statusCode
       : 500;
+
+  void logError(error, {
+    request,
+    statusCode,
+    level: statusCode >= 500 ? 'error' : 'warn',
+  });
 
   // Never leak stack traces to the client in production.
   const message =

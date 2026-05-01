@@ -39,6 +39,7 @@ export class BannerService {
     if (dto.imagen) {
       const archivo = await this.archivoService.create({
         imagen: dto.imagen,
+        nombre: dto.imagen_nombre ?? null,
         alt: dto.imagen_alt ?? null,
         title: dto.imagen_title ?? dto.pagina,
       });
@@ -82,6 +83,7 @@ export class BannerService {
 
       const archivo = await this.archivoService.create({
         imagen: dto.imagen,
+        nombre: dto.imagen_nombre ?? null,
         alt: dto.imagen_alt ?? null,
         title: dto.imagen_title ?? dto.pagina ?? undefined,
       });

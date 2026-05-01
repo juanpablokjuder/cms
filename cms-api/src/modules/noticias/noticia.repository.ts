@@ -206,10 +206,11 @@ export class NoticiaRepository {
     await db.transaction(async (conn) => {
       await conn.query('DELETE FROM noticia_imagenes WHERE noticia_id = ?', [noticiaId]);
       if (items.length === 0) return;
-      const values = items.map((i) => [noticiaId, i.archivo_id, i.orden]);
+      const placeholders = items.map(() => '(?, ?, ?)').join(', ');
+      const flatParams   = items.flatMap((i) => [noticiaId, i.archivo_id, i.orden]);
       await conn.query(
-        'INSERT INTO noticia_imagenes (noticia_id, archivo_id, orden) VALUES ?',
-        [values],
+        `INSERT INTO noticia_imagenes (noticia_id, archivo_id, orden) VALUES ${placeholders}`,
+        flatParams,
       );
     });
   }
