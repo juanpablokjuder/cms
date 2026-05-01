@@ -12,6 +12,7 @@ import { noticiaRoutes } from './modules/noticias/noticia.routes.js';
 import { nosotrosRoutes } from './modules/nosotros/nosotros.routes.js';
 import { errorLogRoutes } from './modules/error-logs/error-log.routes.js';
 import { servicioRoutes } from './modules/servicios/servicio.routes.js';
+import { faqRoutes } from './modules/faqs/faq.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -71,6 +72,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(nosotrosRoutes,  { prefix: `${env.API_PREFIX}/nosotros` });
   await app.register(errorLogRoutes,  { prefix: `${env.API_PREFIX}/error-logs` });
   await app.register(servicioRoutes,  { prefix: env.API_PREFIX });
+  await app.register(faqRoutes,     { prefix: `${env.API_PREFIX}/faqs` });
 
   return app;
 }
