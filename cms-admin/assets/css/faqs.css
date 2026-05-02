@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════════════════════
+   CMS Admin — FAQs Module Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Items list container ────────────────────────────── */
+.faq-items-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 8px; /* drag target even when empty */
+}
+
+.faq-items-empty {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* ─── Single FAQ item row ─────────────────────────────── */
+.faq-item-row {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.faq-item-row.dragging {
+    opacity: 0.4;
+    border-style: dashed;
+}
+
+.faq-item-row.drag-over {
+    border-color: var(--color-accent);
+    background: var(--color-accent-subtle);
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+/* ─── Item header (always visible) ───────────────────── */
+.faq-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
+    user-select: none;
+}
+
+.faq-item-drag-handle {
+    cursor: grab;
+    color: var(--color-text-tertiary);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: var(--space-1);
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+    transition: color var(--transition-fast);
+}
+.faq-item-drag-handle:active { cursor: grabbing; }
+.faq-item-row:hover .faq-item-drag-handle { color: var(--color-text-secondary); }
+
+.faq-item-number {
+    min-width: 22px;
+    height: 22px;
+    border-radius: var(--radius-full);
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.faq-item-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+    flex-shrink: 0;
+}
+.faq-item-toggle:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+
+.faq-item-preview-text {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.faq-item-remove {
+    flex-shrink: 0;
+    /* inherits .gallery-remove styles from noticias.css */
+}
+
+/* ─── Item body (collapsible) ─────────────────────────── */
+.faq-item-body {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* ─── Quill instance inside each FAQ item ─────────────── */
+.faq-quill-container .ql-toolbar.ql-snow {
+    border: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    background: var(--color-bg-tertiary);
+    padding: var(--space-1) var(--space-2);
+    transition: background var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.faq-quill-container .ql-container.ql-snow {
+    border: none !important;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+}
+
+.faq-quill-container .ql-editor {
+    min-height: 140px;
+    color: var(--color-text-primary);
+    background: var(--color-bg-primary);
+    padding: var(--space-3) var(--space-4);
+    line-height: var(--line-height-relaxed);
+    transition: background var(--transition-smooth), color var(--transition-smooth);
+}
+
+.faq-quill-container .ql-editor.ql-blank::before {
+    color: var(--color-text-tertiary) !important;
+    font-style: normal !important;
+    left: var(--space-4);
+}
+
+/* Wrap the quill inside the card border */
+.faq-quill-container {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--transition-base);
+}
+.faq-quill-container:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+/* Toolbar icon colors (inherited pattern from noticias.css) */
+.faq-quill-container .ql-snow .ql-stroke            { stroke: var(--color-text-secondary) !important; }
+.faq-quill-container .ql-snow .ql-fill              { fill:   var(--color-text-secondary) !important; }
+.faq-quill-container .ql-snow .ql-picker-label      { color:  var(--color-text-secondary) !important; }
+.faq-quill-container .ql-snow .ql-picker-options    { background: var(--color-surface-solid) !important; border-color: var(--color-border) !important; }
+.faq-quill-container .ql-snow .ql-picker-item       { color: var(--color-text-primary) !important; }
+.faq-quill-container .ql-snow .ql-picker-item:hover { color: var(--color-accent) !important; }
+
+.faq-quill-container .ql-snow .ql-toolbar button:hover .ql-stroke,
+.faq-quill-container .ql-snow .ql-toolbar button.ql-active .ql-stroke { stroke: var(--color-accent) !important; }
+.faq-quill-container .ql-snow .ql-toolbar button:hover .ql-fill,
+.faq-quill-container .ql-snow .ql-toolbar button.ql-active .ql-fill   { fill:   var(--color-accent) !important; }
+.faq-quill-container .ql-snow .ql-toolbar button:hover,
+.faq-quill-container .ql-snow .ql-toolbar button.ql-active            { color:  var(--color-accent) !important; }
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+    #faq-form > div {
+        grid-template-columns: 1fr !important;
+    }
+}
