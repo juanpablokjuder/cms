@@ -13,6 +13,7 @@ import { nosotrosRoutes } from './modules/nosotros/nosotros.routes.js';
 import { errorLogRoutes } from './modules/error-logs/error-log.routes.js';
 import { servicioRoutes } from './modules/servicios/servicio.routes.js';
 import { faqRoutes } from './modules/faqs/faq.routes.js';
+import { footerRoutes } from './modules/footer/footer.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -20,11 +21,11 @@ export async function buildApp(): Promise<FastifyInstance> {
       level: env.NODE_ENV === 'production' ? 'warn' : 'info',
       ...(env.NODE_ENV !== 'production'
         ? {
-            transport: {
-              target: 'pino-pretty',
-              options: { colorize: true, translateTime: 'SYS:standard' },
-            },
-          }
+          transport: {
+            target: 'pino-pretty',
+            options: { colorize: true, translateTime: 'SYS:standard' },
+          },
+        }
         : {}),
     },
     exposeHeadRoutes: false,
@@ -44,7 +45,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(fastifyJwt, {
     secret: env.JWT_SECRET,
-    sign:   { algorithm: 'HS256', expiresIn: env.JWT_EXPIRES_IN },
+    sign: { algorithm: 'HS256', expiresIn: env.JWT_EXPIRES_IN },
     verify: { algorithms: ['HS256'] },
   });
 
@@ -64,15 +65,16 @@ export async function buildApp(): Promise<FastifyInstance> {
     uptime: process.uptime(),
   }));
 
-  await app.register(authRoutes,    { prefix: `${env.API_PREFIX}/auth` });
-  await app.register(userRoutes,    { prefix: `${env.API_PREFIX}/users` });
+  await app.register(authRoutes, { prefix: `${env.API_PREFIX}/auth` });
+  await app.register(userRoutes, { prefix: `${env.API_PREFIX}/users` });
   await app.register(archivoRoutes, { prefix: `${env.API_PREFIX}/archivos` });
-  await app.register(bannerRoutes,  { prefix: `${env.API_PREFIX}/banners` });
-  await app.register(noticiaRoutes,   { prefix: `${env.API_PREFIX}/noticias` });
-  await app.register(nosotrosRoutes,  { prefix: `${env.API_PREFIX}/nosotros` });
-  await app.register(errorLogRoutes,  { prefix: `${env.API_PREFIX}/error-logs` });
-  await app.register(servicioRoutes,  { prefix: env.API_PREFIX });
-  await app.register(faqRoutes,     { prefix: `${env.API_PREFIX}/faqs` });
+  await app.register(bannerRoutes, { prefix: `${env.API_PREFIX}/banners` });
+  await app.register(noticiaRoutes, { prefix: `${env.API_PREFIX}/noticias` });
+  await app.register(nosotrosRoutes, { prefix: `${env.API_PREFIX}/nosotros` });
+  await app.register(errorLogRoutes, { prefix: `${env.API_PREFIX}/error-logs` });
+  await app.register(servicioRoutes, { prefix: env.API_PREFIX });
+  await app.register(faqRoutes, { prefix: `${env.API_PREFIX}/faqs` });
+  await app.register(footerRoutes, { prefix: `${env.API_PREFIX}/footer` });
 
   return app;
 }
