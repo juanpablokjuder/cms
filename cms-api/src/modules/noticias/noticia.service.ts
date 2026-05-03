@@ -24,6 +24,10 @@ export class NoticiaService {
     return this.repo.findByUuid(uuid);
   }
 
+  async findBySlug(slug: string): Promise<PublicNoticia> {
+    return this.repo.findBySlug(slug);
+  }
+
   async create(dto: CreateNoticiaDTO): Promise<PublicNoticia> {
     // ── Slug resolution ────────────────────────────────────────────────────
     const baseSlug = dto.slug ?? slugify(dto.titulo);

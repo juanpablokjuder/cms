@@ -380,3 +380,26 @@
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .skeleton-row { display: flex; gap: var(--space-4); padding: var(--space-3) var(--space-4); }
 .skeleton-cell { height: 16px; border-radius: var(--radius-sm); }
+
+/* ─── Responsive Form Layouts ─────────────────────────── */
+
+/** Columna principal + columna lateral (ej: editor + panel lateral) */
+.form-cols-aside {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--space-5);
+    align-items: start;
+}
+
+/** Dos columnas iguales (ej: rol + estado) */
+.form-cols-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+@media (max-width: 900px) {
+    .form-cols-aside { grid-template-columns: 1fr; }
+    .form-cols-2     { grid-template-columns: 1fr; }
+}
+

@@ -14,6 +14,7 @@ import { errorLogRoutes } from './modules/error-logs/error-log.routes.js';
 import { servicioRoutes } from './modules/servicios/servicio.routes.js';
 import { faqRoutes } from './modules/faqs/faq.routes.js';
 import { footerRoutes } from './modules/footer/footer.routes.js';
+import { webRoutes } from './modules/web/web.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -75,6 +76,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(servicioRoutes, { prefix: env.API_PREFIX });
   await app.register(faqRoutes, { prefix: `${env.API_PREFIX}/faqs` });
   await app.register(footerRoutes, { prefix: `${env.API_PREFIX}/footer` });
+  await app.register(webRoutes, { prefix: `${env.API_PREFIX}/web` });
 
   return app;
 }

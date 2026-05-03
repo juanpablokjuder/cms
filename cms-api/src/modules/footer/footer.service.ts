@@ -22,6 +22,14 @@ export class FooterService {
     return this.repo.findByUuid(uuid);
   }
 
+  /**
+   * Devuelve el footer más reciente. Retorna null si no existe.
+   * Usado por el módulo web.
+   */
+  async findLatest(): Promise<PublicFooter | null> {
+    return this.repo.findLatest();
+  }
+
   async create(dto: CreateFooterDTO): Promise<PublicFooter> {
     const row = await this.repo.create({
       uuid:           uuidv4(),

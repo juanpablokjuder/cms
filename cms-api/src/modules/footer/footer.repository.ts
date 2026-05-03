@@ -19,7 +19,7 @@ import type {
 } from '../../shared/types/index.js';
 
 function buildImageUrl(slug: string | null): string | null {
-  return slug ? `${env.API_PREFIX}/archivos/${slug}` : null;
+  return slug ? `${env.PUBLIC_API_URL}${env.API_PREFIX}/archivos/${slug}` : null;
 }
 
 export class FooterRepository {
@@ -53,6 +53,21 @@ export class FooterRepository {
       [uuid],
     );
     if (rows.length === 0) throw AppError.notFound('Footer');
+    return this.hydrate(rows[0] as FooterRow);
+  }
+
+  /**
+   * Devuelve el footer más recientemente creado (no eliminado).
+   * Retorna null si aún no existe ningún footer.
+   * Usado por el módulo web.
+   */
+  async findLatest(): Promise<PublicFooter | null> {
+    const rows = await db.query<FooterRow[]>(
+      `SELECT id, uuid, columnas_count, copyright_text, created_at, updated_at
+         FROM footer WHERE deleted_at IS NULL
+         ORDER BY created_at DESC LIMIT 1`,
+    );
+    if (rows.length === 0) return null;
     return this.hydrate(rows[0] as FooterRow);
   }
 
@@ -216,10 +231,11 @@ export class FooterRepository {
         }
 
         if (col.tipo === 'lista_enlaces' && col.enlaces?.length) {
-          const vals = col.enlaces.map((e) => [colId, e.uuid ?? uuidv4(), e.texto, e.url, e.orden]);
+          const rows  = col.enlaces.map((e) => [colId, e.uuid ?? uuidv4(), e.texto, e.url, e.orden]);
+          const phEnl = rows.map(() => '(?, ?, ?, ?, ?)').join(', ');
           await conn.query(
-            'INSERT INTO footer_enlaces (columna_id, uuid, texto, url, orden) VALUES ?',
-            [vals],
+            `INSERT INTO footer_enlaces (columna_id, uuid, texto, url, orden) VALUES ${phEnl}`,
+            rows.flat(),
           );
         }
 
@@ -240,10 +256,11 @@ export class FooterRepository {
     await db.transaction(async (conn) => {
       await conn.query('DELETE FROM footer_redes WHERE footer_id = ?', [footerId]);
       if (!redes.length) return;
-      const vals = redes.map((r) => [footerId, r.uuid ?? uuidv4(), r.nombre, r.url, r.svg_icon, r.orden]);
+      const rows  = redes.map((r) => [footerId, r.uuid ?? uuidv4(), r.nombre, r.url, r.svg_icon, r.orden]);
+      const phRed = rows.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
       await conn.query(
-        'INSERT INTO footer_redes (footer_id, uuid, nombre, url, svg_icon, orden) VALUES ?',
-        [vals],
+        `INSERT INTO footer_redes (footer_id, uuid, nombre, url, svg_icon, orden) VALUES ${phRed}`,
+        rows.flat(),
       );
     });
   }
@@ -255,10 +272,11 @@ export class FooterRepository {
     await db.transaction(async (conn) => {
       await conn.query('DELETE FROM footer_legales WHERE footer_id = ?', [footerId]);
       if (!legales.length) return;
-      const vals = legales.map((l) => [footerId, l.uuid ?? uuidv4(), l.texto, l.url, l.orden]);
+      const rows  = legales.map((l) => [footerId, l.uuid ?? uuidv4(), l.texto, l.url, l.orden]);
+      const phLeg = rows.map(() => '(?, ?, ?, ?, ?)').join(', ');
       await conn.query(
-        'INSERT INTO footer_legales (footer_id, uuid, texto, url, orden) VALUES ?',
-        [vals],
+        `INSERT INTO footer_legales (footer_id, uuid, texto, url, orden) VALUES ${phLeg}`,
+        rows.flat(),
       );
     });
   }

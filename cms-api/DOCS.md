@@ -2,7 +2,7 @@
 
 > **Módulo:** `cms-api`
 > **Versión:** 1.0.0
-> **Última actualización:** 2026-05-01 — Nuevo módulo `servicios` (singleton, categorías, items con galería y precios)
+> **Última actualización:** 2026-05-03 — Nuevo módulo `web` con endpoints públicos para el frontend (banners, noticias, nosotros, servicios, faqs, footer). Token estático `WEB_API_TOKEN`.
 > **Stack:** Node.js 22 LTS · Fastify v5 · MariaDB · TypeScript 5
 
 ---
@@ -22,6 +22,9 @@
    - [Noticias](#módulo-noticias)
    - [Nosotros](#módulo-nosotros)
    - [Servicios](#módulo-servicios)
+   - [FAQs](#módulo-faqs)
+   - [Footer](#módulo-footer)
+   - [Web (endpoints públicos)](#módulo-web)
 7. [Seguridad](#seguridad)
 8. [Utilidades Compartidas](#utilidades-compartidas)
 9. [Scripts Disponibles](#scripts-disponibles)
@@ -67,9 +70,12 @@ cms-api/
 │   │   ├── archivos/             # Gestión de archivos/uploads
 │   │   ├── noticias/             # Gestión de noticias
 │   │   ├── nosotros/             # Singleton Nosotros
-│   │   └── servicios/            # Servicios (singleton + categorías + items)
+│   │   ├── servicios/            # Servicios (singleton + categorías + items)
+│   │   ├── faqs/                 # FAQs (grupos con preguntas/respuestas)
+│   │   ├── footer/               # Footer (columnas, redes, legales)
+│   │   └── web/                  # Endpoints públicos para el frontend web
 │   └── shared/
-│       ├── middlewares/          # Middlewares globales (auth, error-handler)
+│       ├── middlewares/          # Middlewares globales (auth, web-token, error-handler)
 │       ├── types/                # Tipos TypeScript compartidos
 │       └── utils/                # Utilidades (api-response, app-error, slugify)
 └── uploads/                      # Directorio de archivos subidos (configurable con UPLOADS_DIR)
@@ -98,6 +104,7 @@ El archivo `src/config/env.ts` valida todas las variables mediante **Zod**. Si f
 | `PUBLIC_API_URL`      | No        | `http://localhost:3000` | URL pública de la API (sin barra final). Usada para construir URLs absolutas en las respuestas JSON. Ejemplo: `http://192.168.0.20:3000` |
 | `API_PREFIX`          | No        | `/api/v1`        | Prefijo base de todos los endpoints                       |
 | `UPLOADS_DIR`         | No        | `uploads`        | Directorio relativo para almacenar archivos subidos       |
+| `WEB_API_TOKEN`       | **Sí**    | —                | Token estático (mín. 32 chars) para autenticar el frontend web. Generar con `openssl rand -hex 32` |
 
 ---
 
@@ -299,12 +306,49 @@ Registro **singleton**: solo puede existir un registro activo en la tabla. El ad
 
 ---
 
+### Módulo Web
+
+**Prefijo:** `/api/v1/web`
+
+Módulo de **solo lectura** que expone todos los datos necesarios para el frontend público del sitio web. **No requiere JWT.** Utiliza un token estático (`WEB_API_TOKEN`) validado por el middleware `web-token.middleware.ts`.
+
+> Para la documentación completa orientada al frontend (estructura de datos, ejemplos de fetch, guías de presentación por sección), ver [WEB_API_DOCS.md](./WEB_API_DOCS.md).
+
+**Autenticación:** Header `Authorization: Bearer <WEB_API_TOKEN>`
+
+| Método | Endpoint                   | Descripción                                                        |
+|--------|----------------------------|--------------------------------------------------------------------|
+| GET    | `/web/banners`             | Todos los banners activos. `?pagina=` para filtrar por página      |
+| GET    | `/web/noticias`            | Lista paginada de noticias (`?page=1&limit=10`, máx `limit=50`)    |
+| GET    | `/web/noticias/:slug`      | Detalle de una noticia por su slug                                 |
+| GET    | `/web/nosotros`            | Singleton Nosotros (retorna `null` si no fue creado)               |
+| GET    | `/web/servicios`           | Estructura completa: singleton + categorías activas + items activos|
+| GET    | `/web/faqs`                | Todos los grupos FAQ con sus preguntas y respuestas                |
+| GET    | `/web/footer`              | Footer más reciente (retorna `null` si no fue creado)              |
+
+**Reglas de negocio:**
+- Solo se devuelven registros **activos** (no soft-deleted).
+- `/web/servicios` devuelve únicamente categorías con `estado = 1` e items con `estado = 'activo'`.
+- Los endpoints que apuntan a singletons (nosotros, footer) pueden devolver `data: null` si el contenido aún no fue creado desde el panel de administración.
+- Este módulo **nunca expone** datos de usuarios, tokens, ni logs de errores.
+
+**Archivos del módulo:**
+```
+src/modules/web/
+├── web.controller.ts   # Handlers HTTP (validación de query/params con Zod)
+├── web.routes.ts       # Registro de rutas con preHandler authenticateWebToken
+└── web.service.ts      # Orquestación de servicios existentes (BannerService, NoticiaService, etc.)
+```
+
+---
+
 ## Seguridad
 
 - **Helmet** (`@fastify/helmet`): Cabeceras de seguridad HTTP (OWASP hardening).
 - **CORS** (`@fastify/cors`): En producción se restringe el origen; en desarrollo se permite cualquier origen.
-- **JWT HS256** (`@fastify/jwt`): Tokens firmados simétricamente con secreto de mínimo 32 caracteres.
-- **Lista negra de tokens:** La tabla `revoked_tokens` permite invalidar tokens explícitamente en cada logout.
+- **JWT HS256** (`@fastify/jwt`): Tokens firmados simétricamente con secreto de mínimo 32 caracteres. Usados en rutas de admin.
+- **Web API Token:** Token estático `WEB_API_TOKEN` (mín. 32 chars) para los endpoints del módulo web. No expira; se debe rotar manualmente si se compromete.
+- **Lista negra de tokens:** La tabla `revoked_tokens` permite invalidar tokens JWT explícitamente en cada logout.
 - **Bcrypt:** Hash de contraseñas con mínimo 10 rondas (configurable hasta 15).
 - **Validación de entradas:** Todos los DTOs son validados con **Zod** antes de llegar al Service.
 - **Sentencias preparadas:** Todo acceso a base de datos usa queries parametrizadas (sin concatenación de strings SQL).

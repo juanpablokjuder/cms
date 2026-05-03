@@ -29,6 +29,15 @@ export class BannerService {
   }
 
   /**
+   * Todos los banners activos sin paginación.
+   * Si se provee `pagina`, filtra por ese valor.
+   * Usado por el módulo web.
+   */
+  async listAllForWeb(pagina?: string): Promise<PublicBanner[]> {
+    return this.repo.findAllActiveForWeb(pagina);
+  }
+
+  /**
    * Create a new banner.
    * If `imagen` base64 is provided, it is uploaded as an archivo first
    * and the resulting id is stored as the id_imagen FK.

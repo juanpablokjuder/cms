@@ -235,9 +235,3 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────── */
-@media (max-width: 900px) {
-    /* Stack columns */
-    #noticia-form > div {
-        grid-template-columns: 1fr !important;
-    }
-}

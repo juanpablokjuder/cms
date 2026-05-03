@@ -401,4 +401,36 @@ export class ServicioRepository {
     if (rows.length === 0) throw AppError.notFound(`Archivo ${uuid}`);
     return rows[0]!.id;
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // WEB — métodos optimizados para el frontend público
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Devuelve todas las categorías activas (estado=1) sin paginación.
+   */
+  async findActiveCategorias(): Promise<PublicServicioCategoria[]> {
+    const rows = await db.query<ServicioCategoriaRow[]>(
+      `SELECT uuid, nombre, orden, estado, created_at, updated_at
+         FROM servicios_categorias
+        WHERE deleted_at IS NULL AND estado = 1
+        ORDER BY orden ASC, created_at ASC`,
+    );
+    return rows.map(({ id: _id, deleted_at: _d, ...rest }) => rest as PublicServicioCategoria);
+  }
+
+  /**
+   * Devuelve todos los items activos de una categoría específica.
+   */
+  async findActiveItemsByCategoriaUuid(categoriaUuid: string): Promise<PublicServicioItem[]> {
+    const rows = await db.query<ItemQueryRow[]>(
+      `SELECT ${SELECT_ITEM}
+        WHERE si.deleted_at IS NULL
+          AND si.estado = 'activo'
+          AND sc.uuid = ?
+        ORDER BY si.created_at ASC`,
+      [categoriaUuid],
+    );
+    return rows.map(mapItemRow);
+  }
 }

@@ -8,13 +8,18 @@ $currentPage = 'users';
 $headerTitle = 'Editar Usuario';
 $pageTitle = 'Editar Usuario';
 $editUuid = trim($_GET['uuid'] ?? '');
-if (empty($editUuid)) { header('Location: users.php'); exit; }
+if (empty($editUuid)) {
+    header('Location: users.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <?php require_once __DIR__ . '/includes/head.php'; ?>
 </head>
+
 <body>
     <div class="app-layout" id="app-layout">
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -35,20 +40,26 @@ if (empty($editUuid)) { header('Location: users.php'); exit; }
                     <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-5)">
                         <div class="form-group">
                             <label class="form-label" for="user-name">Nombre <span class="required">*</span></label>
-                            <input type="text" id="user-name" class="form-input" placeholder="Nombre completo" required minlength="2" maxlength="150">
+                            <input type="text" id="user-name" class="form-input" placeholder="Nombre completo" required
+                                minlength="2" maxlength="150">
                             <span class="form-error" id="user-name-error"></span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="user-email">Correo electrónico <span class="required">*</span></label>
-                            <input type="email" id="user-email" class="form-input" placeholder="correo@ejemplo.com" required>
+                            <label class="form-label" for="user-email">Correo electrónico <span
+                                    class="required">*</span></label>
+                            <input type="email" id="user-email" class="form-input" placeholder="correo@ejemplo.com"
+                                required>
                             <span class="form-error" id="user-email-error"></span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="user-password">Contraseña <span style="font-weight:normal;color:var(--color-text-tertiary)">(dejar vacío para no cambiar)</span></label>
-                            <input type="password" id="user-password" class="form-input" placeholder="Nueva contraseña (opcional)" minlength="8" maxlength="72">
+                            <label class="form-label" for="user-password">Contraseña <span
+                                    style="font-weight:normal;color:var(--color-text-tertiary)">(dejar vacío para no
+                                    cambiar)</span></label>
+                            <input type="password" id="user-password" class="form-input"
+                                placeholder="Nueva contraseña (opcional)" minlength="8" maxlength="72">
                             <span class="form-error" id="user-password-error"></span>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+                        <div class="form-cols-2">
                             <div class="form-group">
                                 <label class="form-label" for="user-role">Rol</label>
                                 <select id="user-role" class="form-select">
@@ -85,4 +96,5 @@ if (empty($editUuid)) { header('Location: users.php'); exit; }
     <script src="assets/js/user-form.js"></script>
     <?php require_once __DIR__ . '/includes/layout-scripts.php'; ?>
 </body>
+
 </html>

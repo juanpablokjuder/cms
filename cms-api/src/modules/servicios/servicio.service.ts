@@ -211,4 +211,20 @@ export class ServicioService {
       }),
     );
   }
+
+  // ── Web ────────────────────────────────────────────────────────────────────
+
+  /**
+   * Categorías activas (estado=1) sin paginación. Usado por el módulo web.
+   */
+  async listActiveCategorias(): Promise<PublicServicioCategoria[]> {
+    return this.repo.findActiveCategorias();
+  }
+
+  /**
+   * Items activos de una categoría específica. Usado por el módulo web.
+   */
+  async listActiveItemsByCategoria(categoriaUuid: string): Promise<PublicServicioItem[]> {
+    return this.repo.findActiveItemsByCategoriaUuid(categoriaUuid);
+  }
 }

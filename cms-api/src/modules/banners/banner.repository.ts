@@ -17,9 +17,11 @@ function buildImagenUrl(slug: string | null): string | null {
   return `${env.PUBLIC_API_URL}${env.API_PREFIX}/archivos/${slug}`;
 }
 
-/** Intermediate query row that includes the joined archivo slug. */
-interface BannerQueryRow extends Omit<PublicBanner, 'imagen'> {
-  imagen_slug: string | null;
+/** Intermediate query row that includes the joined archivo fields. */
+interface BannerQueryRow extends Omit<PublicBanner, 'imagen' | 'imagen_alt' | 'imagen_title'> {
+  imagen_slug:  string | null;
+  imagen_alt:   string | null;
+  imagen_title: string | null;
 }
 
 /** Common SELECT for banner queries (LEFT JOIN archivos for imagen_slug). */
@@ -27,14 +29,21 @@ const SELECT_BANNERS = `
   b.uuid, b.pagina, b.h1, b.texto_1, b.texto_2,
   b.btn_texto, b.btn_link, b.orden,
   b.created_at, b.updated_at,
-  a.slug AS imagen_slug
+  a.slug  AS imagen_slug,
+  a.alt   AS imagen_alt,
+  a.title AS imagen_title
 FROM banners b
 LEFT JOIN archivos a ON a.id = b.id_imagen AND a.deleted_at IS NULL
 `.trim();
 
 function mapRow(row: BannerQueryRow): PublicBanner {
-  const { imagen_slug, ...rest } = row;
-  return { ...rest, imagen: buildImagenUrl(imagen_slug) };
+  const { imagen_slug, imagen_alt, imagen_title, ...rest } = row;
+  return {
+    ...rest,
+    imagen:       buildImagenUrl(imagen_slug),
+    imagen_alt:   imagen_alt   ?? null,
+    imagen_title: imagen_title ?? null,
+  };
 }
 
 export class BannerRepository {
@@ -67,6 +76,30 @@ export class BannerRepository {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  /**
+   * Returns all active banners without pagination.
+   * Opcionalmente filtra por nombre de página (campo `pagina`).
+   * Usado por el módulo web.
+   */
+  async findAllActiveForWeb(pagina?: string): Promise<PublicBanner[]> {
+    if (pagina) {
+      const rows = await db.query<BannerQueryRow[]>(
+        `SELECT ${SELECT_BANNERS}
+          WHERE b.deleted_at IS NULL AND b.pagina = ?
+          ORDER BY b.orden ASC, b.created_at DESC`,
+        [pagina],
+      );
+      return rows.map(mapRow);
+    }
+
+    const rows = await db.query<BannerQueryRow[]>(
+      `SELECT ${SELECT_BANNERS}
+        WHERE b.deleted_at IS NULL
+        ORDER BY b.orden ASC, b.created_at DESC`,
+    );
+    return rows.map(mapRow);
   }
 
   /**

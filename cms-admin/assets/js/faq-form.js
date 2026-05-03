@@ -4,9 +4,8 @@ const FaqForm = (() => {
     const isEdit  = () => typeof window.FAQ_UUID === 'string' && window.FAQ_UUID.length > 0;
 
     // ── State ──────────────────────────────────────────────────────────────
-    let imageBase64      = null;
-    let imageIsExisting  = false; // true when loaded from API (no re-upload needed)
-    let dragSrcId        = null;
+    let imageInput  = null;
+    let dragSrcId   = null;
 
     /**
      * items: [{ id, uuid|null, pregunta, respuesta(HTML), quill, isNew }]
@@ -19,7 +18,7 @@ const FaqForm = (() => {
 
     function init() {
         if (!el('faq-form')) return;
-        initImageUpload();
+        imageInput = new ImageInput({ container: '#faq-image-mount', multiple: false });
         el('btn-add-item').addEventListener('click', () => addItem());
         el('faq-form').addEventListener('submit', handleSubmit);
 
@@ -29,72 +28,6 @@ const FaqForm = (() => {
         });
 
         if (isEdit()) loadFaq();
-    }
-
-    // ── Image preview (same pattern as Banners) ────────────────────────────
-
-    function initImageUpload() {
-        const zone      = el('faq-upload-zone');
-        const fileInput = el('faq-image-input');
-        const removeBtn = el('faq-image-preview-remove');
-
-        if (!zone || !fileInput) return;
-
-        fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleImageFile(f); });
-
-        zone.addEventListener('dragover',  (e) => { e.preventDefault(); zone.classList.add('dragover'); });
-        zone.addEventListener('dragleave', ()  => zone.classList.remove('dragover'));
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault(); zone.classList.remove('dragover');
-            const f = e.dataTransfer.files[0]; if (f) handleImageFile(f);
-        });
-
-        removeBtn?.addEventListener('click', (e) => { e.stopPropagation(); clearImage(); });
-    }
-
-    function handleImageFile(file) {
-        const valid   = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
-        if (!valid.includes(file.type)) { Toast.error('Formato no soportado.'); return; }
-        if (file.size > 10 * 1024 * 1024) { Toast.error('La imagen no debe superar los 10 MB.'); return; }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imageBase64     = e.target.result;
-            imageIsExisting = false;
-            showImagePreview(imageBase64, file.name, formatBytes(file.size));
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function showImagePreview(src, name, size) {
-        const zone      = el('faq-upload-zone');
-        const container = el('faq-image-preview-container');
-        const img       = el('faq-image-preview');
-        const info      = el('faq-image-preview-info');
-        if (img)       img.src          = src;
-        if (info)      info.textContent = name ? `${name} · ${size}` : '';
-        if (container) container.classList.add('visible');
-        if (zone)      zone.classList.add('has-image');
-    }
-
-    function clearImage() {
-        imageBase64     = null;
-        imageIsExisting = false;
-        const zone      = el('faq-upload-zone');
-        const container = el('faq-image-preview-container');
-        const img       = el('faq-image-preview');
-        const info      = el('faq-image-preview-info');
-        const fileInput = el('faq-image-input');
-        if (img)       img.src          = '';
-        if (info)      info.textContent = '';
-        if (container) container.classList.remove('visible');
-        if (zone)      zone.classList.remove('has-image');
-        if (fileInput) fileInput.value  = '';
-    }
-
-    function formatBytes(b) {
-        if (b < 1024) return b + ' B';
-        if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-        return (b / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
     // ── FAQ Items ──────────────────────────────────────────────────────────
@@ -238,15 +171,21 @@ const FaqForm = (() => {
     async function loadFaq() {
         try {
             const result = await Api.getFaq(window.FAQ_UUID);
-            if (!result.success) return;
+            if (!result.success) {
+                toggleEmptyState();
+                return;
+            }
             const f = result.data;
 
             el('faq-titulo').value = f.titulo || '';
 
             if (f.imagen) {
-                imageIsExisting = true;
-                imageBase64     = null;
-                showImagePreview(f.imagen, null, null);
+                imageInput.setExistingFile({
+                    url:   f.imagen,
+                    nombre: '',
+                    alt:   f.imagen_alt   || '',
+                    title: f.imagen_title || '',
+                });
             }
 
             (f.items || []).forEach(item => addItem({
@@ -330,10 +269,12 @@ const FaqForm = (() => {
             });
 
             const data = { titulo, items: itemsPayload };
-            if (imageBase64 && !imageIsExisting) {
-                data.imagen       = imageBase64;
-                data.imagen_alt   = el('faq-imagen-alt')?.value.trim()   || null;
-                data.imagen_title = el('faq-imagen-title')?.value.trim() || null;
+            const files   = imageInput ? imageInput.getFiles() : [];
+            const imgFile = files[0] ?? null;
+            if (imgFile?.base64) {
+                data.imagen       = imgFile.base64;
+                data.imagen_alt   = imgFile.alt   || null;
+                data.imagen_title = imgFile.title || null;
             }
 
             let result;

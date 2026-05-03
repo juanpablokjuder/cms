@@ -22,6 +22,13 @@ export class FaqService {
     return this.repo.findByUuid(uuid);
   }
 
+  /**
+   * Todos los FAQs sin paginación. Usado por el módulo web.
+   */
+  async listAllForWeb(): Promise<PublicFaq[]> {
+    return this.repo.findAllForWeb();
+  }
+
   async create(dto: CreateFaqDTO): Promise<PublicFaq> {
     // ── Upload image if provided ───────────────────────────────────────────
     let id_imagen: number | null = null;

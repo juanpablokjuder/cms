@@ -81,7 +81,9 @@ export interface BannerRow {
 export interface PublicBanner {
   uuid: string;
   pagina: string;
-  imagen: string | null;  // e.g. /api/v1/archivos/mi-banner-abc123
+  imagen: string | null;  // e.g. http://host/api/v1/archivos/mi-banner-abc123
+  imagen_alt: string | null;
+  imagen_title: string | null;
   h1: string;
   texto_1: string | null;
   texto_2: string | null;
@@ -275,6 +277,47 @@ export interface PublicServicioItem {
   updated_at:     Date;
 }
 
+// ─── FAQs ─────────────────────────────────────────────────────────────────────
+
+export interface FaqRow {
+  id:          number;
+  uuid:        string;
+  titulo:      string;
+  id_imagen:   number | null;
+  deleted_at:  Date | null;
+  created_at:  Date;
+  updated_at:  Date;
+}
+
+export interface FaqItemRow {
+  id:         number;
+  faq_id:     number;
+  uuid:       string;
+  pregunta:   string;
+  respuesta:  string;
+  orden:      number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PublicFaqItem {
+  uuid:      string;
+  pregunta:  string;
+  respuesta: string;
+  orden:     number;
+}
+
+export interface PublicFaq {
+  uuid:         string;
+  titulo:       string;
+  imagen:       string | null;
+  imagen_alt:   string | null;
+  imagen_title: string | null;
+  items:        PublicFaqItem[];
+  created_at:   Date;
+  updated_at:   Date;
+}
+
 // ─── Error Logs ───────────────────────────────────────────────────────────────
 
 export type LogLevel = 'error' | 'warn' | 'info';
@@ -322,5 +365,82 @@ export interface PaginatedErrorLogs {
     limit:      number;
     totalPages: number;
   };
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+
+export type FooterColumnaTipo = 'media_texto' | 'lista_enlaces' | 'contacto';
+
+export interface FooterRow {
+  id:             number;
+  uuid:           string;
+  columnas_count: number;
+  copyright_text: string | null;
+  deleted_at:     Date | null;
+  created_at:     Date;
+  updated_at:     Date;
+}
+
+export interface FooterColumnaRow {
+  id:        number;
+  footer_id: number;
+  uuid:      string;
+  tipo:      FooterColumnaTipo;
+  orden:     number;
+}
+
+export interface FooterMediaTextoData {
+  imagen:      string | null; // URL absoluta o null
+  descripcion: string | null;
+}
+
+export interface FooterEnlaceItem {
+  uuid:  string;
+  texto: string;
+  url:   string;
+  orden: number;
+}
+
+export interface FooterListaEnlacesData {
+  enlaces: FooterEnlaceItem[];
+}
+
+export interface FooterContactoData {
+  direccion: string | null;
+  telefono:  string | null;
+  email:     string | null;
+}
+
+export interface PublicFooterColumna {
+  uuid:  string;
+  tipo:  FooterColumnaTipo;
+  orden: number;
+  data:  FooterMediaTextoData | FooterListaEnlacesData | FooterContactoData;
+}
+
+export interface PublicFooterRed {
+  uuid:     string;
+  nombre:   string;
+  url:      string;
+  svg_icon: string;
+  orden:    number;
+}
+
+export interface PublicFooterLegal {
+  uuid:  string;
+  texto: string;
+  url:   string;
+  orden: number;
+}
+
+export interface PublicFooter {
+  uuid:           string;
+  columnas_count: number;
+  copyright_text: string | null;
+  columnas:       PublicFooterColumna[];
+  redes:          PublicFooterRed[];
+  legales:        PublicFooterLegal[];
+  created_at:     Date;
+  updated_at:     Date;
 }
 

@@ -93,6 +93,30 @@
             </span>
             <span class="sidebar-link-text">Servicios</span>
         </a>
+        <a href="faqs.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'faqs' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">
+                <!-- FAQs / bocadillo de pregunta -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    <line x1="12" y1="8" x2="12" y2="8.01" />
+                    <polyline points="11 11 12 11 12 14 13 14" />
+                </svg>
+            </span>
+            <span class="sidebar-link-text">FAQs</span>
+        </a>
+        <a href="footer-list.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'footer' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">
+                <!-- Footer / barra inferior de página -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="17" x2="21" y2="17" />
+                    <line x1="7" y1="21" x2="7" y2="17" />
+                </svg>
+            </span>
+            <span class="sidebar-link-text">Footer</span>
+        </a>
         <span class="sidebar-nav-label">Sistema</span>
         <a href="error-logs.php"
             class="sidebar-link <?php echo ($currentPage ?? '') === 'error-logs' ? 'active' : ''; ?>">
@@ -108,10 +132,7 @@
             </span>
             <span class="sidebar-link-text">Log de Errores</span>
         </a>
-        <a href="faqs.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'faqs' ? 'active' : ''; ?>">
-            <span class="sidebar-link-icon">❓</span>
-            <span class="sidebar-link-text">FAQs</span>
-        </a>
+
         <a href="logout.php" class="sidebar-link">
             <span class="sidebar-link-icon">
                 <!-- Cerrar sesión / flecha de salida -->

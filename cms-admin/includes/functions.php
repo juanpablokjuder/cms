@@ -24,10 +24,15 @@ function apiRequest(string $method, string $endpoint, ?array $data = null, ?stri
 
     $ch = curl_init();
 
+    $hasBody = $data !== null && in_array(strtoupper($method), ['POST', 'PATCH', 'PUT'], true);
+
     $headers = [
-        'Content-Type: application/json',
         'Accept: application/json',
     ];
+
+    if ($hasBody) {
+        $headers[] = 'Content-Type: application/json';
+    }
 
     if ($jwt !== null) {
         $headers[] = 'Authorization: Bearer ' . $jwt;
@@ -42,7 +47,7 @@ function apiRequest(string $method, string $endpoint, ?array $data = null, ?stri
         CURLOPT_CUSTOMREQUEST => strtoupper($method),
     ]);
 
-    if ($data !== null && in_array(strtoupper($method), ['POST', 'PATCH', 'PUT'], true)) {
+    if ($hasBody) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     }
 

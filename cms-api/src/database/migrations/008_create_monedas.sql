@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS monedas (
   COLLATE=utf8mb4_unicode_ci
   COMMENT='Catálogo de monedas (ARS, EUR, USD, etc.)';
 
-INSERT INTO monedas (uuid, codigo, nombre) VALUES
+INSERT IGNORE INTO monedas (uuid, codigo, nombre) VALUES
   (UUID(), 'ARS', 'Peso Argentino'),
   (UUID(), 'EUR', 'Euro'),
   (UUID(), 'USD', 'Dólar Estadounidense');

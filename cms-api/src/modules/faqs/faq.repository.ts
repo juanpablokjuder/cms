@@ -15,12 +15,14 @@ import type {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildImageUrl(slug: string): string {
-  return `${env.API_PREFIX}/archivos/${slug}`;
+  return `${env.PUBLIC_API_URL}${env.API_PREFIX}/archivos/${slug}`;
 }
 
 interface FaqQueryRow extends Omit<FaqRow, 'id' | 'id_imagen' | 'deleted_at'> {
-  imagen_slug: string | null;
-  items_json:  string | null;
+  imagen_slug:  string | null;
+  imagen_alt:   string | null;
+  imagen_title: string | null;
+  items_json:   string | null;
 }
 
 interface RawItemJson {
@@ -49,17 +51,21 @@ function parseItems(json: string | null): PublicFaqItem[] {
 }
 
 function mapRow(row: FaqQueryRow): PublicFaq {
-  const { imagen_slug, items_json, ...rest } = row;
+  const { imagen_slug, imagen_alt, imagen_title, items_json, ...rest } = row;
   return {
     ...rest,
-    imagen: imagen_slug ? buildImageUrl(imagen_slug) : null,
-    items:  parseItems(items_json),
+    imagen:       imagen_slug ? buildImageUrl(imagen_slug) : null,
+    imagen_alt:   imagen_alt   ?? null,
+    imagen_title: imagen_title ?? null,
+    items:        parseItems(items_json),
   };
 }
 
 const SELECT_FAQ = `
   f.uuid, f.titulo, f.created_at, f.updated_at,
-  a.slug AS imagen_slug,
+  a.slug  AS imagen_slug,
+  a.alt   AS imagen_alt,
+  a.title AS imagen_title,
   (
     SELECT JSON_ARRAYAGG(
       JSON_OBJECT(
@@ -122,6 +128,19 @@ export class FaqRepository {
     );
     if (rows.length === 0) throw AppError.notFound('FAQ');
     return rows[0] as FaqRow;
+  }
+
+  /**
+   * Devuelve todos los FAQs activos sin paginación.
+   * Usado por el módulo web.
+   */
+  async findAllForWeb(): Promise<PublicFaq[]> {
+    const rows = await db.query<FaqQueryRow[]>(
+      `SELECT ${SELECT_FAQ}
+        WHERE f.deleted_at IS NULL
+        ORDER BY f.created_at ASC`,
+    );
+    return rows.map(mapRow);
   }
 
   // ─── Write ─────────────────────────────────────────────────────────────────
@@ -191,17 +210,15 @@ export class FaqRepository {
       await conn.query('DELETE FROM faq_items WHERE faq_id = ?', [faqId]);
       if (items.length === 0) return;
 
-      const values = items.map((i) => [
-        faqId,
-        i.uuid ?? uuidv4(),
-        i.pregunta,
-        i.respuesta,
-        i.orden,
-      ]);
+      const placeholders = items.map(() => '(?, ?, ?, ?, ?)').join(', ');
+      const params: unknown[] = [];
+      for (const i of items) {
+        params.push(faqId, i.uuid ?? uuidv4(), i.pregunta, i.respuesta, i.orden);
+      }
 
       await conn.query(
-        'INSERT INTO faq_items (faq_id, uuid, pregunta, respuesta, orden) VALUES ?',
-        [values],
+        `INSERT INTO faq_items (faq_id, uuid, pregunta, respuesta, orden) VALUES ${placeholders}`,
+        params,
       );
     });
   }

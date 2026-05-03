@@ -1,0 +1,198 @@
+/* ═══════════════════════════════════════════════════════
+   CMS Admin — Footer Module Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Selector de número de columnas ─────────────────── */
+.footer-col-count-selector {
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+}
+
+.col-count-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.col-count-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-accent-subtle);
+}
+
+.col-count-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+/* ─── Grid de columnas ───────────────────────────────── */
+.footer-columns-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+}
+
+/* ─── Panel de columna individual ────────────────────── */
+.footer-col-panel {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-elevated);
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-col-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-tertiary);
+    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-2);
+}
+
+.footer-col-number {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.footer-col-type-select {
+    font-size: var(--font-size-xs);
+    padding: var(--space-1) var(--space-2);
+    height: 28px;
+    flex: 1;
+    min-width: 0;
+}
+
+.footer-col-panel-body {
+    padding: var(--space-4);
+    flex: 1;
+}
+
+/* ─── Listas genéricas (redes, legales, enlaces) ──────── */
+.footer-item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.footer-item-empty {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    text-align: center;
+    padding: var(--space-6) var(--space-4);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* ─── Enlace item (en columna y en legales) ──────────── */
+.footer-enlace-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* ─── Red social item ────────────────────────────────── */
+.footer-red-item {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elevated);
+    overflow: hidden;
+}
+
+.footer-red-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-tertiary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.footer-red-svg-area {
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.footer-red-svg-preview {
+    width: 28px;
+    height: 28px;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+}
+
+.footer-red-svg-preview svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+/* ─── Quill en bloque media_texto ────────────────────── */
+.footer-descripcion-quill {
+    margin-top: var(--space-1);
+}
+
+.footer-descripcion-quill .ql-toolbar {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border-color: var(--color-border);
+    background: var(--color-bg-tertiary);
+}
+
+.footer-descripcion-quill .ql-container {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    border-color: var(--color-border);
+    font-size: var(--font-size-sm);
+    min-height: 80px;
+}
+
+.footer-descripcion-quill .ql-editor {
+    min-height: 80px;
+}
+
+/* ─── Drag handle (reutilizable) ─────────────────────── */
+.faq-item-drag-handle {
+    cursor: grab;
+    color: var(--color-text-tertiary);
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color var(--transition-fast);
+}
+.faq-item-drag-handle:active { cursor: grabbing; }
+
+/* ─── Card header utilitario ─────────────────────────── */
+.card-header {
+    display: flex;
+    align-items: center;
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-3);
+}
+
+.card-header-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    flex: 1;
+}

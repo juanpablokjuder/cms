@@ -24,6 +24,7 @@ const pool = createPool({
   multipleStatements: false,   // ← SECURITY: blocks stacked queries
   insertIdAsNumber: true,
   bigIntAsNumber: true,
+  autoJsonMap: false,          // ← Return JSON_ARRAYAGG results as strings, not pre-parsed objects
 });
 
 // ─── Database façade ──────────────────────────────────────────────────────────

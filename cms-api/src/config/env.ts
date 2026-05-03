@@ -40,6 +40,12 @@ const envSchema = z.object({
 
   // File uploads
   UPLOADS_DIR: z.string().default('uploads'),
+
+  // Web API — token estático para autenticar el frontend público
+  // Generar con: openssl rand -hex 32
+  WEB_API_TOKEN: z
+    .string()
+    .min(32, 'WEB_API_TOKEN must be at least 32 characters'),
 });
 const result = envSchema.safeParse(process.env);
 

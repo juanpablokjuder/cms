@@ -40,7 +40,7 @@ if (empty($editUuid)) {
             </div>
 
             <form id="noticia-form" novalidate>
-                <div style="display:grid;grid-template-columns:1fr 380px;gap:var(--space-5);align-items:start">
+                <div class="form-cols-aside">
 
                     <!-- Columna principal -->
                     <div style="display:flex;flex-direction:column;gap:var(--space-5)">

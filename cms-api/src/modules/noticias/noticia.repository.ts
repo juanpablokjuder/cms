@@ -13,7 +13,7 @@ import type {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildImageUrl(slug: string): string {
-  return `${env.API_PREFIX}/archivos/${slug}`;
+  return `${env.PUBLIC_API_URL}${env.API_PREFIX}/archivos/${slug}`;
 }
 
 /** Raw row returned by the noticia + imagenes JOIN */
@@ -124,6 +124,17 @@ export class NoticiaRepository {
     );
     if (rows.length === 0) throw AppError.notFound('Noticia');
     return rows[0] as NoticiaRow;
+  }
+
+  async findBySlug(slug: string): Promise<PublicNoticia> {
+    const rows = await db.query<NoticiaQueryRow[]>(
+      `SELECT ${SELECT_NOTICIA}
+        WHERE n.slug = ? AND n.deleted_at IS NULL
+        LIMIT 1`,
+      [slug],
+    );
+    if (rows.length === 0) throw AppError.notFound('Noticia');
+    return mapRow(rows[0] as NoticiaQueryRow);
   }
 
   async slugExists(slug: string, excludeUuid?: string): Promise<boolean> {
