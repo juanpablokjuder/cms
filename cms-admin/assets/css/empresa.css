@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════
+   CMS Admin — Empresa Module Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Loading skeleton ────────────────────────────────── */
+.empresa-loading-state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 640px;
+}
+
+/* ─── Card header extras ──────────────────────────────── */
+.empresa-status-badge {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.02em;
+}
+
+.empresa-status-badge--active {
+    background: var(--color-success-subtle, rgba(34,197,94,.12));
+    color: var(--color-success, #22c55e);
+}
+
+.empresa-status-badge--empty {
+    background: var(--color-warning-subtle, rgba(234,179,8,.12));
+    color: var(--color-warning, #eab308);
+}
+
+/* ─── Form body ───────────────────────────────────────── */
+.empresa-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-6);
+}
+
+/* ─── Input with icon ─────────────────────────────────── */
+.empresa-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.empresa-input-wrapper--textarea {
+    align-items: flex-start;
+}
+
+.empresa-input-icon {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-size-base);
+    pointer-events: none;
+    line-height: 1;
+    z-index: 1;
+}
+
+.empresa-input-icon--top {
+    top: var(--space-3);
+    transform: none;
+}
+
+.empresa-input-with-icon {
+    padding-left: calc(var(--space-4) + 1.6rem + var(--space-2)) !important;
+}
+
+/* ─── Card footer meta ────────────────────────────────── */
+.empresa-footer-meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    flex: 1;
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+    .empresa-form-body {
+        padding: var(--space-4);
+    }
+}

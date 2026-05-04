@@ -105,6 +105,10 @@
             </span>
             <span class="sidebar-link-text">FAQs</span>
         </a>
+        <a href="empresa.php" class="sidebar-link <?php echo $cp === 'empresa' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">🏢</span>
+            <span class="sidebar-link-text">Empresa</span>
+        </a>
         <a href="footer-list.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'footer' ? 'active' : ''; ?>">
             <span class="sidebar-link-icon">
                 <!-- Footer / barra inferior de página -->
