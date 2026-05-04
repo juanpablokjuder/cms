@@ -1,0 +1,53 @@
+# cms-web — Apache .htaccess
+# Para Nginx, ver la guía de configuración del servidor.
+
+Options -Indexes
+ServerSignature Off
+
+# ── Redirección HTTP → HTTPS ──────────────────────────────
+# Activar solo en producción (descomentar):
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ── Seguridad de headers ──────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';"
+</IfModule>
+
+# ── Bloquear acceso a archivos sensibles ──────────────────
+<FilesMatch "(\.env|\.env\..*|composer\.json|composer\.lock|package\.json|\.git)">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Bloquear acceso directo a carpetas internas
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(config|lib)/   - [F,L]
+</IfModule>
+
+# ── Cache de assets estáticos ─────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css              "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/jpeg            "access plus 1 year"
+  ExpiresByType image/png             "access plus 1 year"
+  ExpiresByType image/webp            "access plus 1 year"
+  ExpiresByType image/svg+xml         "access plus 1 year"
+  ExpiresByType image/x-icon          "access plus 1 year"
+</IfModule>
+
+# ── Compresión gzip ───────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>
+
+# ── Charset por defecto ───────────────────────────────────
+AddDefaultCharset UTF-8

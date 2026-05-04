@@ -30,6 +30,7 @@ export async function buildApp(): Promise<FastifyInstance> {
         : {}),
     },
     exposeHeadRoutes: false,
+    bodyLimit: 52428800, // 50 MB
   });
 
   await app.register(fastifyHelmet, {
