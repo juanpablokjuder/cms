@@ -476,7 +476,7 @@ body::before {
 .hero-subtitle-1 {
   font-size: clamp(1rem, 1.8vw, 1.2rem);
   color: var(--text-muted); line-height: 1.75;
-  margin-bottom: 0.85rem; max-width: 620px;
+  margin-bottom: 0.85rem; width: 100%;
   font-weight: 300;
 }
 /* Subtítulo 2 — etiqueta técnica/detalle */
@@ -484,7 +484,7 @@ body::before {
   display: inline-flex; align-items: center; gap: 0.55rem;
   font-size: 0.72rem; font-weight: 700;
   letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 0;
+  color: var(--accent); margin-bottom: 0;width: 100%;
   opacity: .85;
 }
 .hero-subtitle-2::before {
@@ -498,7 +498,7 @@ body::before {
   color: var(--text-muted); line-height: 1.7;
   margin-bottom: 0.6rem; max-width: 580px;
 }
-.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; justify-content: center; }
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; justify-content: start; width: 100%; }
 
 /* Dots */
 .hero-dots {

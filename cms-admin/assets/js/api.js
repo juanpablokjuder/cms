@@ -94,6 +94,33 @@ const Api = (() => {
     const updateServicioItem = (uuid, data) => request('api/proxy-servicio-items-update.php', { method: 'POST', body: { uuid, ...data } });
     const deleteServicioItem = (uuid) => request('api/proxy-servicio-items-delete.php', { method: 'POST', body: { uuid } });
 
+    // ─── Productos: Colores ───────────────────────────────────────────────────
+    const getColores = (page = 1, limit = 20) => request('api/proxy-colores-list.php', { params: { page, limit } });
+    const getColoresAll = () => request('api/proxy-colores-all.php');
+    const getColor = (uuid) => request('api/proxy-colores-get.php', { params: { uuid } });
+    const createColor = (data) => request('api/proxy-colores-create.php', { method: 'POST', body: data });
+    const updateColor = (uuid, data) => request('api/proxy-colores-update.php', { method: 'POST', body: { uuid, ...data } });
+    const deleteColor = (uuid) => request('api/proxy-colores-delete.php', { method: 'POST', body: { uuid } });
+
+    // ─── Productos: Lookups ───────────────────────────────────────────────────
+    const getProductosCondiciones = () => request('api/proxy-productos-condiciones-list.php');
+    const getProductosGarantias = () => request('api/proxy-productos-garantias-list.php');
+
+    // ─── Productos: Atributos ─────────────────────────────────────────────────
+    const getProductosAtributos = (page = 1, limit = 20) => request('api/proxy-productos-atributos-list.php', { params: { page, limit } });
+    const getProductosAtributosAll = () => request('api/proxy-productos-atributos-all.php');
+    const getProductoAtributo = (uuid) => request('api/proxy-productos-atributos-get.php', { params: { uuid } });
+    const createProductoAtributo = (data) => request('api/proxy-productos-atributos-create.php', { method: 'POST', body: data });
+    const updateProductoAtributo = (uuid, data) => request('api/proxy-productos-atributos-update.php', { method: 'POST', body: { uuid, ...data } });
+    const deleteProductoAtributo = (uuid) => request('api/proxy-productos-atributos-delete.php', { method: 'POST', body: { uuid } });
+
+    // ─── Productos ────────────────────────────────────────────────────────────
+    const getProductos = (page = 1, limit = 20) => request('api/proxy-productos-list.php', { params: { page, limit } });
+    const getProducto = (uuid) => request('api/proxy-productos-get.php', { params: { uuid } });
+    const createProducto = (data) => request('api/proxy-productos-create.php', { method: 'POST', body: data });
+    const updateProducto = (uuid, data) => request('api/proxy-productos-update.php', { method: 'POST', body: { uuid, ...data } });
+    const deleteProducto = (uuid) => request('api/proxy-productos-delete.php', { method: 'POST', body: { uuid } });
+
     // ── Empresa ───────────────────────────────────────────────────────────
     const getEmpresa = () => request('api/proxy-empresa-get.php');
     const createEmpresa = (data) => request('api/proxy-empresa-create.php', { method: 'POST', body: data });
@@ -114,7 +141,11 @@ const Api = (() => {
         getServicio, createServicio, updateServicio,
         getServicioCategorias, getServicioCategoria, createServicioCategoria, updateServicioCategoria, deleteServicioCategoria,
         getServicioItems, getServicioItem, createServicioItem, updateServicioItem, deleteServicioItem,
-        getEmpresa, createEmpresa, updateEmpresa, deleteEmpresa
+        getEmpresa, createEmpresa, updateEmpresa, deleteEmpresa,
+        getColores, getColoresAll, getColor, createColor, updateColor, deleteColor,
+        getProductosCondiciones, getProductosGarantias,
+        getProductosAtributos, getProductosAtributosAll, getProductoAtributo, createProductoAtributo, updateProductoAtributo, deleteProductoAtributo,
+        getProductos, getProducto, createProducto, updateProducto, deleteProducto,
     };
 })();
 

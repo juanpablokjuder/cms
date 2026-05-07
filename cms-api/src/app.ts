@@ -16,6 +16,7 @@ import { faqRoutes } from './modules/faqs/faq.routes.js';
 import { footerRoutes } from './modules/footer/footer.routes.js';
 import { webRoutes } from './modules/web/web.routes.js';
 import { empresaRoutes } from './modules/empresa/empresa.routes.js';
+import { productoRoutes } from './modules/productos/producto.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -80,6 +81,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(footerRoutes, { prefix: `${env.API_PREFIX}/footer` });
   await app.register(webRoutes, { prefix: `${env.API_PREFIX}/web` });
   await app.register(empresaRoutes, { prefix: `${env.API_PREFIX}/empresa` });
+  await app.register(productoRoutes, { prefix: env.API_PREFIX });
 
   return app;
 }
