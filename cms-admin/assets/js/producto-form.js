@@ -5,6 +5,7 @@ const isEdit  = document.getElementById('prod-uuid') !== null && document.getEle
 const prodUuid = isEdit ? document.getElementById('prod-uuid').value : null;
 
 // ─── Estado global del formulario ────────────────────────────────────────────
+let seoAccordion = null;
 let varianteIndex = 0;
 const varianteImageInputs = {}; // idx → ImageInput
 let coloresOptions    = [];   // [{ uuid, nombre }]
@@ -20,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindFormEvents();
     bindMgrModals();
     bindAtributosPlantilla();
+
+    seoAccordion = new SeoAccordion({ container: '#seo-accordion-mount', namespace: 'prod-seo' });
 
     if (isEdit) {
         document.getElementById('page-loading')?.remove?.();
@@ -90,6 +93,11 @@ async function loadProductoForEdit() {
         if (p.atributos_uuid) {
             document.getElementById('prod-atributos-plantilla').value = p.atributos_uuid;
             renderAtributosValores(p.atributos_uuid, p.atributos ?? {});
+        }
+
+        // SEO existente
+        if (p.seo) {
+            seoAccordion.populate(p.seo);
         }
 
         // Variantes
@@ -301,6 +309,7 @@ async function submitProducto(e) {
     if (!variantes) return;
     if (!variantes.length) { document.getElementById('variantes-error').textContent = 'Agregue al menos una variante.'; return; }
 
+    const seoData = seoAccordion ? seoAccordion.collect() : null;
     const payload = {
         nombre,
         marca:        document.getElementById('prod-marca').value.trim() || null,
@@ -311,6 +320,7 @@ async function submitProducto(e) {
         atributos_uuid: document.getElementById('prod-atributos-plantilla').value || null,
         atributos:    collectAtributos(),
         variantes,
+        ...(seoData ? { seo_data: seoData } : {}),
     };
 
     setLoading(btn, true);

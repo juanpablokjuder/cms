@@ -15,6 +15,7 @@ $pageTitle = 'Nuevo Producto';
     <?php require_once __DIR__ . '/includes/head.php'; ?>
     <link rel="stylesheet" href="assets/css/productos.css">
     <link rel="stylesheet" href="assets/css/image-input.css">
+    <link rel="stylesheet" href="assets/css/seo.css">
 </head>
 
 <body>
@@ -144,6 +145,10 @@ $pageTitle = 'Nuevo Producto';
                         </button>
                     </div>
                 </div>
+
+                <!-- ── Componente SEO (inyectado al final del formulario) ──── -->
+                <div id="seo-accordion-mount"></div>
+
             </form>
         </main>
     </div>
@@ -321,6 +326,7 @@ $pageTitle = 'Nuevo Producto';
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/image-input.js"></script>
+    <script src="assets/js/seo-accordion.js"></script>
     <script src="assets/js/producto-form.js"></script>
 </body>
 

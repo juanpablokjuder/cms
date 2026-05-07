@@ -1,5 +1,6 @@
 import { ProductoRepository } from './producto.repository.js';
 import { ArchivoService } from '../archivos/archivo.service.js';
+import { SeoService } from '../seo/seo.service.js';
 import type { CreateColorDTO } from './dtos/create-color.dto.js';
 import type { UpdateColorDTO } from './dtos/update-color.dto.js';
 import type { CreateAtributoPlantillaDTO } from './dtos/create-atributo-plantilla.dto.js';
@@ -11,10 +12,12 @@ import type { PaginationOptions } from '../../shared/types/index.js';
 export class ProductoService {
   private readonly repo: ProductoRepository;
   private readonly archivoService: ArchivoService;
+  private readonly seoService: SeoService;
 
   constructor() {
     this.repo = new ProductoRepository();
     this.archivoService = new ArchivoService();
+    this.seoService = new SeoService();
   }
 
   // ── Colores ──────────────────────────────────────────────────────────────
@@ -142,7 +145,11 @@ export class ProductoService {
         imagenes: await this._resolveVarianteImagenes(v.imagenes ?? []),
       })),
     );
-    return this.repo.createProducto({ ...dto, variantes, creadorUuid });
+    const producto = await this.repo.createProducto({ ...dto, variantes, creadorUuid });
+    if (dto.seo_data) {
+      await this.seoService.upsert('producto', producto.uuid, dto.seo_data);
+    }
+    return this.repo.findProductoByUuid(producto.uuid);
   }
 
   async updateProducto(uuid: string, dto: UpdateProductoDTO, updaterUuid: string) {
@@ -154,7 +161,11 @@ export class ProductoService {
           })),
         )
       : undefined;
-    return this.repo.updateProducto(uuid, { ...dto, variantes, updaterUuid });
+    const producto = await this.repo.updateProducto(uuid, { ...dto, variantes, updaterUuid });
+    if (dto.seo_data) {
+      await this.seoService.upsert('producto', uuid, dto.seo_data);
+    }
+    return this.repo.findProductoByUuid(producto.uuid);
   }
 
   deleteProducto(uuid: string) {

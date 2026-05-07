@@ -49,6 +49,16 @@ export interface PublicVariante {
   updated_at:       Date;
 }
 
+export interface PublicProductoSeo {
+  title:            string | null;
+  meta_description: string | null;
+  meta_keywords:    string | null;
+  og_title:         string | null;
+  og_description:   string | null;
+  scripts_head:     string | null;
+  scripts_body:     string | null;
+}
+
 export interface PublicProducto {
   uuid:                string;
   nombre:              string;
@@ -63,6 +73,7 @@ export interface PublicProducto {
   atributos:           Record<string, unknown> | null;
   estado:              'activo' | 'inactivo';
   variantes:           PublicVariante[];
+  seo:                 PublicProductoSeo | null;
   created_at:          Date;
   updated_at:          Date;
 }
@@ -372,8 +383,18 @@ export class ProductoRepository {
       [uuid],
     );
     if (!rows[0]) throw new AppError('Producto no encontrado.', 404, 'NOT_FOUND');
-    const row     = rows[0];
+    const row       = rows[0];
     const variantes = await this._loadVariantes(row.id);
+    const seoRows   = await db.query<Array<{
+      title: string | null; meta_description: string | null; meta_keywords: string | null;
+      og_title: string | null; og_description: string | null;
+      scripts_head: string | null; scripts_body: string | null;
+    }>>(
+      `SELECT title, meta_description, meta_keywords, og_title, og_description, scripts_head, scripts_body
+       FROM seo_metadata WHERE entity_type = 'producto' AND entity_uuid = ? LIMIT 1`,
+      [row.uuid],
+    );
+    const seo = seoRows[0] ?? null;
     return {
       uuid:               row.uuid,
       nombre:             row.nombre,
@@ -388,6 +409,7 @@ export class ProductoRepository {
       atributos:          parseJson<Record<string, unknown>>(row.atributos),
       estado:             row.estado as 'activo' | 'inactivo',
       variantes,
+      seo,
       created_at:         row.created_at,
       updated_at:         row.updated_at,
     };

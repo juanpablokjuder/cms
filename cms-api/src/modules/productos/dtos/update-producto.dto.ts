@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { varianteSchema } from './create-producto.dto.js';
+import { seoDataSchema } from '../../seo/dtos/upsert-seo.dto.js';
 
 const varianteUpdateSchema = varianteSchema.extend({
   uuid: z.string().uuid().optional(), // si tiene uuid → update; sin uuid → insert
@@ -15,6 +16,7 @@ export const updateProductoSchema = z.object({
   atributos:     z.record(z.string(), z.unknown()).nullable().optional(),
   estado:        z.enum(['activo', 'inactivo']).optional(),
   variantes:     z.array(varianteUpdateSchema).optional(),
+  seo_data:      seoDataSchema.optional(),
 });
 
 export type UpdateProductoDTO = z.infer<typeof updateProductoSchema>;

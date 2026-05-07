@@ -127,6 +127,12 @@ const Api = (() => {
     const updateEmpresa = (uuid, data) => request('api/proxy-empresa-update.php', { method: 'POST', body: { uuid, ...data } });
     const deleteEmpresa = (uuid) => request('api/proxy-empresa-delete.php', { method: 'POST', body: { uuid } });
 
+    // ─── SEO Metadatos ────────────────────────────────────────────────────
+    const getSeo = (entityType, entityUuid) =>
+        request('api/proxy-seo-get.php', { params: { entity_type: entityType, entity_uuid: entityUuid } });
+    const upsertSeo = (entityType, entityUuid, data) =>
+        request('api/proxy-seo-upsert.php', { method: 'POST', body: { entity_type: entityType, entity_uuid: entityUuid, ...data } });
+
     return {
         request,
         login, logout, getMe,
@@ -146,6 +152,7 @@ const Api = (() => {
         getProductosCondiciones, getProductosGarantias,
         getProductosAtributos, getProductosAtributosAll, getProductoAtributo, createProductoAtributo, updateProductoAtributo, deleteProductoAtributo,
         getProductos, getProducto, createProducto, updateProducto, deleteProducto,
+        getSeo, upsertSeo,
     };
 })();
 

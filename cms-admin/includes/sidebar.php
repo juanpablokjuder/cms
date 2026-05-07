@@ -135,6 +135,20 @@
             </span>
             <span class="sidebar-link-text">Footer</span>
         </a>
+        <a href="seo-paginas.php"
+            class="sidebar-link <?php echo ($currentPage ?? '') === 'seo' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">
+                <!-- SEO / lupa con engranaje -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="11" y1="8" x2="11" y2="14"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+            </span>
+            <span class="sidebar-link-text">SEO Páginas</span>
+        </a>
         <span class="sidebar-nav-label">Sistema</span>
         <a href="error-logs.php"
             class="sidebar-link <?php echo ($currentPage ?? '') === 'error-logs' ? 'active' : ''; ?>">

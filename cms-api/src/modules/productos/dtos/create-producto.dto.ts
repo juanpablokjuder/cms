@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { seoDataSchema } from '../../seo/dtos/upsert-seo.dto.js';
 
 const BASE64_RE = /^data:(image\/(?:png|jpeg|webp|gif|svg\+xml));base64,([A-Za-z0-9+/]+=*)$/;
 
@@ -33,6 +34,7 @@ export const createProductoSchema = z.object({
   atributos:    z.record(z.string(), z.unknown()).nullable().optional(),
   estado:       z.enum(['activo', 'inactivo']).default('activo'),
   variantes:    z.array(varianteSchema).default([]),
+  seo_data:     seoDataSchema.optional(),
 });
 
 export type CreateProductoDTO = z.infer<typeof createProductoSchema>;
