@@ -386,7 +386,7 @@
 /** Columna principal + columna lateral (ej: editor + panel lateral) */
 .form-cols-aside {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 340px;
     gap: var(--space-5);
     align-items: start;
 }
@@ -402,4 +402,61 @@
     .form-cols-aside { grid-template-columns: 1fr; }
     .form-cols-2     { grid-template-columns: 1fr; }
 }
+
+/* ─── Tab Bar ─────────────────────────────────────────── */
+.tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-5);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-bar-btn {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--transition-base), border-color var(--transition-base);
+    white-space: nowrap;
+    display: flex; align-items: center; gap: var(--space-2);
+    background: none;
+}
+.tab-bar-btn svg { width: 15px; height: 15px; opacity: 0.65; flex-shrink: 0; }
+.tab-bar-btn:hover { color: var(--color-text-primary); }
+.tab-bar-btn:hover svg { opacity: 1; }
+.tab-bar-btn.active {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+}
+.tab-bar-btn.active svg { opacity: 1; }
+.tab-bar-btn.has-error { color: var(--color-danger); }
+.tab-bar-btn.has-error.active { border-bottom-color: var(--color-danger); }
+
+/* ─── Table: column alignment helpers ─────────────────── */
+.data-table th.col-num,
+.data-table td.col-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    padding-right: var(--space-6);
+}
+.data-table th.col-center,
+.data-table td.col-center { text-align: center; }
+.data-table th.col-img { width: 64px; }
+
+/* ─── Quick action icon buttons in tables ─────────────── */
+.btn-table-action {
+    width: 32px; height: 32px; padding: 0;
+    border-radius: var(--radius-md);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    transition: color var(--transition-base), background-color var(--transition-base);
+}
+.btn-table-action:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+.btn-table-action.danger:hover { color: var(--color-danger); background: var(--color-danger-subtle); }
+.btn-table-action svg { width: 15px; height: 15px; }
 

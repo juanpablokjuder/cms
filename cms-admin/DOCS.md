@@ -1,8 +1,8 @@
 # CMS-ADMIN — Documentación Técnica
 
 > **Módulo:** `cms-admin`
-> **Versión:** 1.0.0
-> **Última actualización:** 2026-05-01 — Nueva sección `servicios` (singleton + categorías + items con galería y precios)
+> **Versión:** 1.1.0
+> **Última actualización:** 2026-05-07 — Rediseño UI módulo Productos: formulario en pestañas (4 tabs), tab-bar global como componente reutilizable, acciones de tabla con iconos SVG, variante-cards modernizadas con badge numérico y animaciones de entrada.
 > **Stack:** PHP (Nativo), JavaScript ES6+, AJAX (Fetch API), jQuery (selectivo)
 
 ---
@@ -233,6 +233,40 @@ Cada archivo proxy tiene una responsabilidad única. Todos siguen el mismo patr�
   3. **Tab Items:** Tabla paginada con miniatura, título, precio con moneda, estado y acciones editar/eliminar.
 - **`servicio-categoria-create.php` / `servicio-categoria-edit.php`:** Formulario con campos: nombre (text), orden (number), estado (select activo/inactivo). Modo edición recibe `?uuid=`.
 - **`servicio-item-create.php` / `servicio-item-edit.php`:** Formulario de dos columnas. Columna izquierda: título, subtítulo 1, subtítulo 2, editor Quill (texto), galería ImageInput múltiple. Columna derecha (sidebar): precio + moneda, categoría, estado, btn_titulo, btn_link, botón de enviar.
+
+### Productos (`productos.php`, `producto-create.php`, `producto-edit.php`) ★ REDISEÑADO v1.1
+
+El módulo de productos gestiona el catálogo completo incluyendo variantes de color con precios, stock, imágenes e atributos dinámicos.
+
+**`productos.php` — Listado (3 tabs):**
+- Tab **Productos**: tabla paginada con miniatura, nombre, marca, condición, contador de variantes (alineado a la derecha con `col-num`), estado y acciones rápidas con iconos SVG (`.btn-table-action`).
+- Tab **Colores**: tabla paginada con muestra circular, nombre y acciones inline. Modal de creación/edición con `ImageInput`.
+- Tab **Atributos**: tabla de plantillas de atributos con badges de campos (`badge-info`). Modal de creación/edición con filas dinámicas de campos (nombre + tipo).
+- El tab-bar usa el nuevo componente `.tab-bar` / `.tab-bar-btn` de `components.css`.
+
+**`producto-create.php` / `producto-edit.php` — Formulario en pestañas:**
+
+Estructura de dos columnas (`form-cols-aside`):
+
+- **Columna principal** (`product-form-main`): tab-bar de 4 pestañas usando `.form-tab-bar`:
+  1. **Información General** — nombre (requerido), marca, descripción.
+  2. **Variantes & Precio** — maestro-detalle de variantes. Cada variante: color, moneda, precio (en centavos), descuento, stock, imágenes (`ImageInput` múltiple con reordenamiento). Las tarjetas usan `.variante-card` con `.variante-badge` numérico y animación `hover`.
+  3. **Atributos** — selector de plantilla de atributos + campos dinámicos renderizados según el tipo (texto, número, booleano). Botón "Gestionar plantillas" abre modal `modal-atributos-mgr`.
+  4. **SEO** — componente `SeoAccordion` montado en `#seo-accordion-mount`.
+
+- **Sidebar** (`product-form-sidebar`): Estado (activo/inactivo), Clasificación (condición + garantía), botón de submit.
+
+**Indicadores de error en tabs:** Al hacer submit con errores, el JS marca `.has-error` en el tab correspondiente y hace click en él automáticamente para mostrar el problema al usuario.
+
+**Scripts cargados:** `toast.js`, `api.js`, `image-input.js`, `seo-accordion.js`, `producto-form.js`.
+
+**Funciones clave de `producto-form.js`:**
+- `initFormTabs()` — inicializa la navegación entre las 4 pestañas del formulario.
+- `markTabError(formTab, hasError)` — agrega/quita `.has-error` en el botón de tab correspondiente.
+- `switchToTab(formTab)` — cambia programáticamente a un tab.
+- `addVariante(data)` — clona el `<template id="tpl-variante">` e inicializa `ImageInput` para esa variante.
+- `collectVariantes()` — recolecta y valida todos los datos de variantes antes del submit.
+- `renderAtributosValores(uuid, valores)` — renderiza dinámicamente los campos según la plantilla seleccionada.
 
 ---
 

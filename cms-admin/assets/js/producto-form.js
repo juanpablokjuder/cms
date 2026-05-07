@@ -1,22 +1,23 @@
 'use strict';
 
 // ─── Modo: create vs edit ────────────────────────────────────────────────────
-const isEdit  = document.getElementById('prod-uuid') !== null && document.getElementById('prod-uuid').value !== '';
+const isEdit   = document.getElementById('prod-uuid') !== null && document.getElementById('prod-uuid').value !== '';
 const prodUuid = isEdit ? document.getElementById('prod-uuid').value : null;
 
 // ─── Estado global del formulario ────────────────────────────────────────────
 let seoAccordion = null;
 let varianteIndex = 0;
-const varianteImageInputs = {}; // idx → ImageInput
-let coloresOptions    = [];   // [{ uuid, nombre }]
-let monedasOptions    = [];   // [{ uuid, codigo }]
-let atributosOptions  = [];   // plantillas completas
-let coloresAllForMgr  = [];
+const varianteImageInputs = {};
+let coloresOptions     = [];
+let monedasOptions     = [];
+let atributosOptions   = [];
+let coloresAllForMgr   = [];
 let atributosAllForMgr = [];
 let colorQuickImageInput = null;
 
 // ─── Inicialización ───────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    initFormTabs();
     await Promise.all([loadSelectData(), loadMonedas()]);
     bindFormEvents();
     bindMgrModals();
@@ -25,11 +26,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     seoAccordion = new SeoAccordion({ container: '#seo-accordion-mount', namespace: 'prod-seo' });
 
     if (isEdit) {
-        document.getElementById('page-loading')?.remove?.();
+        document.getElementById('page-loading')?.remove();
         document.getElementById('producto-form').style.display = '';
         await loadProductoForEdit();
     }
 });
+
+// ─── Tabs del formulario ──────────────────────────────────────────────────────
+
+function initFormTabs() {
+    document.querySelectorAll('.form-tab-bar .tab-bar-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.formTab;
+            document.querySelectorAll('.form-tab-bar .tab-bar-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => { p.style.display = 'none'; });
+            btn.classList.add('active');
+            const panel = document.getElementById('form-tab-' + target);
+            if (panel) panel.style.display = '';
+        });
+    });
+}
+
+function markTabError(formTab, hasError) {
+    const btn = document.querySelector(`.form-tab-bar .tab-bar-btn[data-form-tab="${formTab}"]`);
+    if (!btn) return;
+    btn.classList.toggle('has-error', hasError);
+}
+
+function switchToTab(formTab) {
+    const btn = document.querySelector(`.form-tab-bar .tab-bar-btn[data-form-tab="${formTab}"]`);
+    if (btn) btn.click();
+}
 
 // ─── Carga de datos para selectores ──────────────────────────────────────────
 
@@ -45,10 +72,9 @@ async function loadSelectData() {
         coloresOptions   = resColores.data ?? [];
         atributosOptions = resAtrib.data ?? [];
 
-        // Selects de condición y garantía
-        fillSelect('prod-condicion', resCond.data ?? [], 'uuid', 'nombre', '-- Sin especificar --');
-        fillSelect('prod-garantia',  resGar.data ?? [],  'uuid', 'nombre', '-- Sin garantía --');
-        fillSelect('prod-atributos-plantilla', atributosOptions, 'uuid', 'nombre', '-- Sin plantilla --');
+        fillSelect('prod-condicion', resCond.data ?? [], 'uuid', 'nombre', '— Sin especificar —');
+        fillSelect('prod-garantia',  resGar.data ?? [],  'uuid', 'nombre', '— Sin garantía —');
+        fillSelect('prod-atributos-plantilla', atributosOptions, 'uuid', 'nombre', '— Sin plantilla —');
     } catch (e) {
         Toast.error('Error cargando datos del formulario: ' + e.message);
     }
@@ -95,12 +121,8 @@ async function loadProductoForEdit() {
             renderAtributosValores(p.atributos_uuid, p.atributos ?? {});
         }
 
-        // SEO existente
-        if (p.seo) {
-            seoAccordion.populate(p.seo);
-        }
+        if (p.seo) seoAccordion.populate(p.seo);
 
-        // Variantes
         (p.variantes ?? []).forEach(v => addVariante(v));
     } catch (e) {
         Toast.error('Error cargando producto: ' + e.message);
@@ -115,18 +137,20 @@ function bindFormEvents() {
 }
 
 function addVariante(data = null) {
-    console.log('Agregando variante', data);
-    const tpl  = document.getElementById('tpl-variante');
+    const tpl   = document.getElementById('tpl-variante');
     const clone = tpl.content.cloneNode(true);
     const card  = clone.querySelector('.variante-card');
     const idx   = varianteIndex++;
-    console.log('Índice asignado:', idx);
-    console.log('Card creada:', card);
+
     card.dataset.idx  = idx;
     card.dataset.uuid = data?.uuid ?? '';
-    card.querySelector('.variante-num').textContent = idx + 1;
 
-    // Llenar opciones de colores
+    const num = document.querySelectorAll('.variante-card').length + 1;
+    card.querySelector('.variante-num').textContent = num;
+    const badge = card.querySelector('.variante-badge');
+    if (badge) badge.textContent = num;
+
+    // Opciones de color
     const selColor = card.querySelector('.variante-color');
     coloresOptions.forEach(c => {
         const opt = document.createElement('option');
@@ -136,7 +160,7 @@ function addVariante(data = null) {
     });
     if (data?.color_uuid) selColor.value = data.color_uuid;
 
-    // Llenar opciones de monedas
+    // Opciones de moneda
     const selMoneda = card.querySelector('.variante-moneda');
     monedasOptions.forEach(m => {
         const opt = document.createElement('option');
@@ -146,27 +170,25 @@ function addVariante(data = null) {
     });
     if (data?.moneda_uuid) selMoneda.value = data.moneda_uuid;
 
-    // Valores
+    // Valores numéricos
     if (data) {
         card.querySelector('.variante-precio').value    = data.precio    ?? 0;
         card.querySelector('.variante-descuento').value = data.descuento ?? 0;
         card.querySelector('.variante-stock').value     = data.stock     ?? 0;
     }
 
-    // ImageInput para imágenes de la variante
-    const imgWrap = card.querySelector('.variante-imagenes-wrap');
+    // ImageInput
+    const imgWrap  = card.querySelector('.variante-imagenes-wrap');
     const imgInputEl = document.createElement('div');
     imgInputEl.id = `variante-img-${idx}`;
     imgWrap.appendChild(imgInputEl);
-  
 
     document.getElementById('variantes-list').appendChild(clone);
     document.getElementById('variantes-empty').style.display = 'none';
 
-     const imgInput = new ImageInput({ container: `#variante-img-${idx}`, multiple: true });
-     varianteImageInputs[idx] = imgInput;
+    const imgInput = new ImageInput({ container: `#variante-img-${idx}`, multiple: true });
+    varianteImageInputs[idx] = imgInput;
 
-    // Pre-cargar imágenes existentes
     if (data?.imagenes?.length) {
         data.imagenes.forEach(img => imgInput.setExistingFile({ url: img.url, _archivo_uuid: img.archivo_uuid, _orden: img.orden }));
     }
@@ -176,13 +198,16 @@ function addVariante(data = null) {
         card.remove();
         delete varianteImageInputs[idx];
         reindexVariantes();
+        const empty = document.getElementById('variantes-empty');
+        if (!document.querySelectorAll('.variante-card').length) empty.style.display = '';
     });
-
 }
 
 function reindexVariantes() {
     document.querySelectorAll('.variante-card').forEach((card, i) => {
         card.querySelector('.variante-num').textContent = i + 1;
+        const badge = card.querySelector('.variante-badge');
+        if (badge) badge.textContent = i + 1;
     });
 }
 
@@ -192,37 +217,27 @@ function collectVariantes() {
     let valid = true;
 
     cards.forEach(card => {
-        const idx       = Number(card.dataset.idx);
-        const uuid      = card.dataset.uuid || undefined;
-        const colorUuid = card.querySelector('.variante-color').value;
+        const idx        = Number(card.dataset.idx);
+        const uuid       = card.dataset.uuid || undefined;
+        const colorUuid  = card.querySelector('.variante-color').value;
         const monedaUuid = card.querySelector('.variante-moneda').value;
-        const precio    = parseInt(card.querySelector('.variante-precio').value, 10);
-        const descuento = parseInt(card.querySelector('.variante-descuento').value, 10) || 0;
-        const stock     = parseInt(card.querySelector('.variante-stock').value, 10) || 0;
+        const precio     = parseInt(card.querySelector('.variante-precio').value, 10);
+        const descuento  = parseInt(card.querySelector('.variante-descuento').value, 10) || 0;
+        const stock      = parseInt(card.querySelector('.variante-stock').value, 10) || 0;
 
-        // Validaciones básicas
-        if (!colorUuid) { card.querySelector('.variante-color-error').textContent = 'Seleccione un color.'; valid = false; }
-        else card.querySelector('.variante-color-error').textContent = '';
-        if (!monedaUuid) { card.querySelector('.variante-moneda-error').textContent = 'Seleccione una moneda.'; valid = false; }
-        else card.querySelector('.variante-moneda-error').textContent = '';
+        if (!colorUuid)             { card.querySelector('.variante-color-error').textContent  = 'Seleccione un color.';  valid = false; }
+        else                          card.querySelector('.variante-color-error').textContent  = '';
+        if (!monedaUuid)            { card.querySelector('.variante-moneda-error').textContent = 'Seleccione una moneda.'; valid = false; }
+        else                          card.querySelector('.variante-moneda-error').textContent = '';
         if (isNaN(precio) || precio < 0) { card.querySelector('.variante-precio-error').textContent = 'Precio inválido.'; valid = false; }
-        else card.querySelector('.variante-precio-error').textContent = '';
-        if (isNaN(stock) || stock < 0) { card.querySelector('.variante-stock-error').textContent = 'Stock inválido.'; valid = false; }
-        else card.querySelector('.variante-stock-error').textContent = '';
+        else                              card.querySelector('.variante-precio-error').textContent = '';
+        if (isNaN(stock) || stock < 0)   { card.querySelector('.variante-stock-error').textContent  = 'Stock inválido.';  valid = false; }
+        else                              card.querySelector('.variante-stock-error').textContent  = '';
 
-        const files = varianteImageInputs[idx]?.getFiles?.() ?? [];
+        const files    = varianteImageInputs[idx]?.getFiles?.() ?? [];
         const imagenes = files.map((img, i) => {
-            if (img.base64) {
-                return {
-                    imagen:        img.base64,
-                    imagen_nombre: img.nombre || null,
-                    imagen_alt:    img.alt    || null,
-                    orden:         i,
-                };
-            }
-            if (img._archivo_uuid) {
-                return { archivo_uuid: img._archivo_uuid, orden: img._orden ?? i };
-            }
+            if (img.base64)        return { imagen: img.base64, imagen_nombre: img.nombre || null, imagen_alt: img.alt || null, orden: i };
+            if (img._archivo_uuid) return { archivo_uuid: img._archivo_uuid, orden: img._orden ?? i };
             return null;
         }).filter(Boolean);
 
@@ -237,7 +252,7 @@ function collectVariantes() {
 // ─── Atributos dinámicos ──────────────────────────────────────────────────────
 
 function bindAtributosPlantilla() {
-    document.getElementById('prod-atributos-plantilla').addEventListener('change', (e) => {
+    document.getElementById('prod-atributos-plantilla').addEventListener('change', e => {
         renderAtributosValores(e.target.value, {});
     });
 }
@@ -269,7 +284,7 @@ function renderAtributosValores(plantillaUuid, valores = {}) {
             input.className = 'form-input';
             input.value = valores[key] ?? '';
         }
-        input.dataset.atribKey = key;
+        input.dataset.atribKey  = key;
         input.dataset.atribType = type;
         group.appendChild(input);
         wrap.appendChild(group);
@@ -279,7 +294,7 @@ function renderAtributosValores(plantillaUuid, valores = {}) {
 }
 
 function collectAtributos() {
-    const wrap = document.getElementById('atributos-valores-wrap');
+    const wrap   = document.getElementById('atributos-valores-wrap');
     const inputs = wrap.querySelectorAll('[data-atrib-key]');
     if (!inputs.length) return null;
     const obj = {};
@@ -287,9 +302,9 @@ function collectAtributos() {
         const k = inp.dataset.atribKey;
         const t = inp.dataset.atribType;
         const v = inp.value;
-        if (t === 'number') obj[k] = v === '' ? null : Number(v);
+        if (t === 'number')       obj[k] = v === '' ? null : Number(v);
         else if (t === 'boolean') obj[k] = v === '' ? null : v === 'true';
-        else obj[k] = v === '' ? null : v;
+        else                      obj[k] = v === '' ? null : v;
     });
     return obj;
 }
@@ -298,27 +313,47 @@ function collectAtributos() {
 
 async function submitProducto(e) {
     e.preventDefault();
-    const btn   = document.getElementById('btn-submit');
+    const btn    = document.getElementById('btn-submit');
     const nombre = document.getElementById('prod-nombre').value.trim();
     document.getElementById('prod-nombre-error').textContent = '';
     document.getElementById('variantes-error').textContent = '';
 
-    if (!nombre) { document.getElementById('prod-nombre-error').textContent = 'El nombre es requerido.'; return; }
+    // Limpiar indicadores de error en tabs
+    ['general', 'variantes', 'atributos', 'seo'].forEach(t => markTabError(t, false));
+
+    let firstErrorTab = null;
+
+    if (!nombre) {
+        document.getElementById('prod-nombre-error').textContent = 'El nombre es requerido.';
+        markTabError('general', true);
+        firstErrorTab = firstErrorTab ?? 'general';
+    }
 
     const variantes = collectVariantes();
-    if (!variantes) return;
-    if (!variantes.length) { document.getElementById('variantes-error').textContent = 'Agregue al menos una variante.'; return; }
+    if (!variantes) {
+        markTabError('variantes', true);
+        firstErrorTab = firstErrorTab ?? 'variantes';
+    } else if (!variantes.length) {
+        document.getElementById('variantes-error').textContent = 'Agregue al menos una variante.';
+        markTabError('variantes', true);
+        firstErrorTab = firstErrorTab ?? 'variantes';
+    }
+
+    if (firstErrorTab) {
+        switchToTab(firstErrorTab);
+        return;
+    }
 
     const seoData = seoAccordion ? seoAccordion.collect() : null;
     const payload = {
         nombre,
-        marca:        document.getElementById('prod-marca').value.trim() || null,
-        descripcion:  document.getElementById('prod-descripcion').value.trim() || null,
-        estado:       document.getElementById('prod-estado').value,
+        marca:          document.getElementById('prod-marca').value.trim() || null,
+        descripcion:    document.getElementById('prod-descripcion').value.trim() || null,
+        estado:         document.getElementById('prod-estado').value,
         condicion_uuid: document.getElementById('prod-condicion').value || null,
         garantia_uuid:  document.getElementById('prod-garantia').value  || null,
         atributos_uuid: document.getElementById('prod-atributos-plantilla').value || null,
-        atributos:    collectAtributos(),
+        atributos:      collectAtributos(),
         variantes,
         ...(seoData ? { seo_data: seoData } : {}),
     };
@@ -345,66 +380,60 @@ async function submitProducto(e) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function bindMgrModals() {
-    // Abrir modales de gestión
     document.getElementById('btn-gestionar-atributos')?.addEventListener('click', openAtributosMgr);
 
-    // Cerrar modales de gestión
     document.getElementById('btn-close-modal-colores-mgr')?.addEventListener('click', () => closeMgrModal('modal-colores-mgr'));
     document.getElementById('btn-close-modal-atributos-mgr')?.addEventListener('click', () => closeMgrModal('modal-atributos-mgr'));
-    document.getElementById('btn-close-modal-color-form')?.addEventListener('click', () => closeQuickForm('modal-color-form'));
-    document.getElementById('btn-close-modal-atributo-form')?.addEventListener('click', () => closeQuickForm('modal-atributo-form'));
+    document.getElementById('btn-close-modal-color-form')?.addEventListener('click', () => closeMgrModal('modal-color-form'));
+    document.getElementById('btn-close-modal-atributo-form')?.addEventListener('click', () => closeMgrModal('modal-atributo-form'));
 
-    // Botones "nuevo" dentro del mgr
     document.getElementById('btn-mgr-nuevo-color')?.addEventListener('click', () => openColorQuickForm(null));
     document.getElementById('btn-mgr-nuevo-atributo')?.addEventListener('click', () => openAtributoQuickForm(null));
 
-    // Cancelar quick forms
-    document.getElementById('btn-cancel-color-quick')?.addEventListener('click', () => closeQuickForm('modal-color-form'));
-    document.getElementById('btn-cancel-atributo-quick')?.addEventListener('click', () => closeQuickForm('modal-atributo-form'));
+    document.getElementById('btn-cancel-color-quick')?.addEventListener('click', () => closeMgrModal('modal-color-form'));
+    document.getElementById('btn-cancel-atributo-quick')?.addEventListener('click', () => closeMgrModal('modal-atributo-form'));
 
-    // Submit quick forms
     document.getElementById('color-quick-form')?.addEventListener('submit', submitColorQuick);
     document.getElementById('atributo-quick-form')?.addEventListener('submit', submitAtributoQuick);
 
-    // Agregar campo en atributo quick
     document.getElementById('btn-aq-add-campo')?.addEventListener('click', () => addCampoRow('aq-campos-list', {}));
 
-    // ImageInput para color rápido
     colorQuickImageInput = new ImageInput({ container: '#cq-imagen-input' });
 }
 
 function closeMgrModal(id) {
     document.getElementById(id).style.display = 'none';
 }
-function closeQuickForm(id) {
-    document.getElementById(id).style.display = 'none';
-}
 
 // ─── Gestión de colores ───────────────────────────────────────────────────────
 
+const ICON_EDIT_SM  = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>`;
+const ICON_TRASH_SM = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916"/></svg>`;
+
 async function loadMgrColores() {
     const tbody = document.getElementById('mgr-colores-tbody');
-    tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="table-empty">Cargando...</td></tr>';
     try {
         const res = await Api.getColoresAll();
         coloresAllForMgr = res.data ?? [];
         if (!coloresAllForMgr.length) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay colores.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="table-empty">No hay colores registrados.</td></tr>';
         } else {
             tbody.innerHTML = coloresAllForMgr.map(c => `
                 <tr>
-                    <td>${c.imagen_url ? `<img src="${escHtml(c.imagen_url)}" class="color-swatch" alt="">` : '—'}</td>
+                    <td class="col-img">${c.imagen_url ? `<img src="${escHtml(c.imagen_url)}" class="color-swatch" alt="">` : '<span class="color-swatch-empty">—</span>'}</td>
                     <td>${escHtml(c.nombre)}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-secondary btn-xs" onclick="openColorQuickForm('${escHtml(c.uuid)}')">✏️</button>
-                        <button class="btn btn-danger btn-xs" onclick="mgrDeleteColor('${escHtml(c.uuid)}', '${escHtml(c.nombre)}')">🗑️</button>
+                    <td class="col-center">
+                        <div class="table-actions" style="justify-content:center">
+                            <button class="btn-table-action" title="Editar" onclick="openColorQuickForm('${escHtml(c.uuid)}')">${ICON_EDIT_SM}</button>
+                            <button class="btn-table-action danger" title="Eliminar" onclick="mgrDeleteColor('${escHtml(c.uuid)}', '${escHtml(c.nombre.replace(/'/g, "\\'"))}')">${ICON_TRASH_SM}</button>
+                        </div>
                     </td>
                 </tr>`).join('');
         }
-        // Re-cargar opciones de color en variantes existentes
         await refreshColoresOptions();
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-danger">${escHtml(e.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" class="table-empty" style="color:var(--color-danger)">${escHtml(e.message)}</td></tr>`;
     }
 }
 
@@ -413,7 +442,7 @@ async function refreshColoresOptions() {
     coloresOptions = res.data ?? [];
     document.querySelectorAll('.variante-color').forEach(sel => {
         const current = sel.value;
-        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        sel.innerHTML = '<option value="">— Seleccionar —</option>';
         coloresOptions.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.uuid;
@@ -460,7 +489,7 @@ async function submitColorQuick(e) {
         if (uuid) await Api.updateColor(uuid, payload);
         else      await Api.createColor(payload);
         Toast.success(uuid ? 'Color actualizado.' : 'Color creado.');
-        closeQuickForm('modal-color-form');
+        closeMgrModal('modal-color-form');
         await loadMgrColores();
     } catch (e) {
         Toast.error(e.message);
@@ -487,27 +516,28 @@ async function openAtributosMgr() {
 
 async function loadMgrAtributos() {
     const tbody = document.getElementById('mgr-atributos-tbody');
-    tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="table-empty">Cargando...</td></tr>';
     try {
         const res = await Api.getProductosAtributosAll();
         atributosAllForMgr = res.data ?? [];
         if (!atributosAllForMgr.length) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay plantillas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="table-empty">No hay plantillas registradas.</td></tr>';
         } else {
             tbody.innerHTML = atributosAllForMgr.map(a => `
                 <tr>
-                    <td>${escHtml(a.nombre)}</td>
-                    <td>${Object.keys(a.atributos).map(k => `<span class="badge badge-info">${escHtml(k)}</span>`).join(' ')}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-secondary btn-xs" onclick="openAtributoQuickForm('${escHtml(a.uuid)}')">✏️</button>
-                        <button class="btn btn-danger btn-xs" onclick="mgrDeleteAtributo('${escHtml(a.uuid)}', '${escHtml(a.nombre)}')">🗑️</button>
+                    <td><strong>${escHtml(a.nombre)}</strong></td>
+                    <td>${Object.keys(a.atributos ?? {}).map(k => `<span class="badge-info">${escHtml(k)}</span>`).join('')}</td>
+                    <td class="col-center">
+                        <div class="table-actions" style="justify-content:center">
+                            <button class="btn-table-action" title="Editar" onclick="openAtributoQuickForm('${escHtml(a.uuid)}')">${ICON_EDIT_SM}</button>
+                            <button class="btn-table-action danger" title="Eliminar" onclick="mgrDeleteAtributo('${escHtml(a.uuid)}', '${escHtml(a.nombre.replace(/'/g, "\\'"))}')">${ICON_TRASH_SM}</button>
+                        </div>
                     </td>
                 </tr>`).join('');
         }
-        // Actualizar opciones del select de plantilla
         await refreshAtributosOptions();
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-danger">${escHtml(e.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" class="table-empty" style="color:var(--color-danger)">${escHtml(e.message)}</td></tr>`;
     }
 }
 
@@ -516,7 +546,7 @@ async function refreshAtributosOptions() {
     atributosOptions = res.data ?? [];
     const sel = document.getElementById('prod-atributos-plantilla');
     const current = sel.value;
-    sel.innerHTML = '<option value="">-- Sin plantilla --</option>';
+    sel.innerHTML = '<option value="">— Sin plantilla —</option>';
     atributosOptions.forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.uuid;
@@ -538,7 +568,7 @@ function openAtributoQuickForm(uuid) {
     if (uuid) {
         Api.getProductoAtributo(uuid).then(res => {
             document.getElementById('aq-nombre').value = res.data.nombre;
-            Object.entries(res.data.atributos).forEach(([k, v]) => addCampoRow('aq-campos-list', { key: k, type: v }));
+            Object.entries(res.data.atributos ?? {}).forEach(([k, v]) => addCampoRow('aq-campos-list', { key: k, type: v }));
         }).catch(e => Toast.error(e.message));
     }
 }
@@ -557,7 +587,7 @@ async function submitAtributoQuick(e) {
         if (uuid) await Api.updateProductoAtributo(uuid, { nombre, atributos: campos });
         else      await Api.createProductoAtributo({ nombre, atributos: campos });
         Toast.success(uuid ? 'Plantilla actualizada.' : 'Plantilla creada.');
-        closeQuickForm('modal-atributo-form');
+        closeMgrModal('modal-atributo-form');
         await loadMgrAtributos();
     } catch (e) {
         Toast.error(e.message);
@@ -582,23 +612,23 @@ function addCampoRow(containerId, { key = '', type = 'string' } = {}) {
     const row = document.createElement('div');
     row.className = 'campo-row';
     row.innerHTML = `
-        <input type="text"  class="form-input campo-key"  placeholder="Nombre del campo" value="${escHtml(key)}" style="flex:1">
-        <select class="form-input campo-type" style="width:120px">
+        <input type="text" class="form-input campo-key" placeholder="Nombre del campo" value="${escHtml(key)}">
+        <select class="form-input campo-type" style="width:130px;flex-shrink:0">
             <option value="string"  ${type === 'string'  ? 'selected' : ''}>Texto</option>
             <option value="number"  ${type === 'number'  ? 'selected' : ''}>Número</option>
-            <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Sí/No</option>
+            <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Sí / No</option>
         </select>
-        <button type="button" class="btn btn-danger btn-xs btn-remove-campo">✕</button>
+        <button type="button" class="btn-table-action danger btn-remove-campo" title="Quitar campo">${ICON_TRASH_SM}</button>
     `;
     row.querySelector('.btn-remove-campo').addEventListener('click', () => row.remove());
     container.appendChild(row);
 }
 
 function getCamposFromList(containerId, errorId) {
-    const eId = errorId ?? (containerId.replace('-list', '-error'));
+    const eId      = errorId ?? containerId.replace('-list', '-error');
     const container = document.getElementById(containerId);
-    const rows = container.querySelectorAll('.campo-row');
-    const errEl = document.getElementById(eId);
+    const rows      = container.querySelectorAll('.campo-row');
+    const errEl     = document.getElementById(eId);
     if (!rows.length) { if (errEl) errEl.textContent = 'Agregue al menos un campo.'; return null; }
     const obj = {};
     for (const row of rows) {

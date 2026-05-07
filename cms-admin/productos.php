@@ -31,36 +31,48 @@ $pageTitle = 'Productos';
                 </div>
             </div>
 
-            <!-- Tabs -->
-            <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4)">
-                <button class="btn btn-secondary tab-btn active" data-tab="productos">📦 Productos</button>
-                <button class="btn btn-secondary tab-btn" data-tab="colores">🎨 Colores</button>
-                <button class="btn btn-secondary tab-btn" data-tab="atributos">🏷️ Atributos</button>
+            <!-- Tab Bar -->
+            <div class="tab-bar" role="tablist">
+                <button class="tab-bar-btn active" data-tab="productos" role="tab" aria-selected="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                    Productos
+                </button>
+                <button class="tab-bar-btn" data-tab="colores" role="tab" aria-selected="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
+                    Colores
+                </button>
+                <button class="tab-bar-btn" data-tab="atributos" role="tab" aria-selected="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+                    Atributos
+                </button>
             </div>
 
             <!-- TAB: Productos -->
             <div class="tab-content" id="tab-productos">
                 <div class="card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+                    <div class="card-header">
                         <span class="card-header-title">Catálogo de Productos</span>
-                        <a href="producto-create.php" class="btn btn-primary btn-sm">+ Nuevo Producto</a>
+                        <a href="producto-create.php" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Nuevo Producto
+                        </a>
                     </div>
                     <div class="table-wrapper">
                         <table class="data-table" id="productos-table">
                             <thead>
                                 <tr>
-                                    <th>Imagen</th>
+                                    <th class="col-img">Imagen</th>
                                     <th>Nombre</th>
                                     <th>Marca</th>
                                     <th>Condición</th>
-                                    <th>Variantes</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th class="col-num">Variantes</th>
+                                    <th class="col-center">Estado</th>
+                                    <th class="col-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="productos-tbody">
                                 <tr>
-                                    <td colspan="7" class="text-center">Cargando...</td>
+                                    <td colspan="7" class="table-empty">Cargando...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -72,22 +84,25 @@ $pageTitle = 'Productos';
             <!-- TAB: Colores -->
             <div class="tab-content" id="tab-colores" style="display:none">
                 <div class="card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+                    <div class="card-header">
                         <span class="card-header-title">Colores</span>
-                        <button class="btn btn-primary btn-sm" id="btn-nuevo-color">+ Nuevo Color</button>
+                        <button class="btn btn-primary btn-sm" id="btn-nuevo-color">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Nuevo Color
+                        </button>
                     </div>
                     <div class="table-wrapper">
                         <table class="data-table" id="colores-table">
                             <thead>
                                 <tr>
-                                    <th>Muestra</th>
+                                    <th class="col-img">Muestra</th>
                                     <th>Nombre</th>
-                                    <th>Acciones</th>
+                                    <th class="col-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="colores-tbody">
                                 <tr>
-                                    <td colspan="3" class="text-center">Cargando...</td>
+                                    <td colspan="3" class="table-empty">Cargando...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -99,9 +114,12 @@ $pageTitle = 'Productos';
             <!-- TAB: Atributos -->
             <div class="tab-content" id="tab-atributos" style="display:none">
                 <div class="card">
-                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+                    <div class="card-header">
                         <span class="card-header-title">Plantillas de Atributos</span>
-                        <button class="btn btn-primary btn-sm" id="btn-nuevo-atributo">+ Nueva Plantilla</button>
+                        <button class="btn btn-primary btn-sm" id="btn-nuevo-atributo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Nueva Plantilla
+                        </button>
                     </div>
                     <div class="table-wrapper">
                         <table class="data-table" id="atributos-table">
@@ -109,12 +127,12 @@ $pageTitle = 'Productos';
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Campos</th>
-                                    <th>Acciones</th>
+                                    <th class="col-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="atributos-tbody">
                                 <tr>
-                                    <td colspan="3" class="text-center">Cargando...</td>
+                                    <td colspan="3" class="table-empty">Cargando...</td>
                                 </tr>
                             </tbody>
                         </table>
