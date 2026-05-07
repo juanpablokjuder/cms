@@ -73,4 +73,23 @@ export async function webRoutes(fastify: FastifyInstance): Promise<void> {
     { preHandler: [authenticateWebToken] },
     (req, rep) => ctrl.getFooter(req, rep),
   );
+
+  // ── Productos ─────────────────────────────────────────────────────────────
+  fastify.get(
+    '/productos',
+    { preHandler: [authenticateWebToken] },
+    (req, rep) => ctrl.getProductos(req, rep),
+  );
+
+  fastify.get(
+    '/productos-marcas',
+    { preHandler: [authenticateWebToken] },
+    (req, rep) => ctrl.getProductosMarcas(req, rep),
+  );
+
+  fastify.get(
+    '/productos/:uuid',
+    { preHandler: [authenticateWebToken] },
+    (req, rep) => ctrl.getProductoByUuid(req, rep),
+  );
 }

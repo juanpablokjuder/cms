@@ -4,6 +4,8 @@ import { NosotrosService } from '../nosotros/nosotros.service.js';
 import { ServicioService } from '../servicios/servicio.service.js';
 import { FaqService } from '../faqs/faq.service.js';
 import { FooterService } from '../footer/footer.service.js';
+import { ProductoRepository } from '../productos/producto.repository.js';
+import type { PublicProducto, PublicProductoWeb } from '../productos/producto.repository.js';
 import type {
   PublicBanner,
   PublicNoticia,
@@ -37,6 +39,7 @@ export class WebService {
   private readonly servicioService: ServicioService;
   private readonly faqService:      FaqService;
   private readonly footerService:   FooterService;
+  private readonly productoRepo:    ProductoRepository;
 
   constructor() {
     this.bannerService   = new BannerService();
@@ -45,6 +48,7 @@ export class WebService {
     this.servicioService = new ServicioService();
     this.faqService      = new FaqService();
     this.footerService   = new FooterService();
+    this.productoRepo    = new ProductoRepository();
   }
 
   // ─── Banners ───────────────────────────────────────────────────────────────
@@ -108,5 +112,25 @@ export class WebService {
    */
   async getFooter(): Promise<PublicFooter | null> {
     return this.footerService.findLatest();
+  }
+
+  // ─── Productos ─────────────────────────────────────────────────────────────
+
+  async getProductos(opts: {
+    page:    number;
+    limit:   number;
+    sort?:   'recent' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc';
+    marcas?: string[];
+    search?: string;
+  }): Promise<PaginatedResult<PublicProductoWeb>> {
+    return this.productoRepo.listProductosForWeb(opts);
+  }
+
+  async getProductoByUuid(uuid: string): Promise<PublicProducto> {
+    return this.productoRepo.findActiveByUuid(uuid);
+  }
+
+  async getMarcas(): Promise<Array<{ marca: string; total: number }>> {
+    return this.productoRepo.listMarcasForWeb();
   }
 }

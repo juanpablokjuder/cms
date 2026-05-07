@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem cms-web -Recurse -Force | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | Format-Table -AutoSize)"
+    ]
+  }
+}

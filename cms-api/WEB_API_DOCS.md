@@ -16,6 +16,7 @@
    - [4.4 Servicios](#44-servicios)
    - [4.5 FAQs](#45-faqs)
    - [4.6 Footer](#46-footer)
+   - [4.7 Productos](#47-productos)
 5. [Guía de implementación por sección](#5-guía-de-implementación-por-sección)
 6. [Notas generales de diseño](#6-notas-generales-de-diseño)
 
@@ -531,6 +532,145 @@ El campo `svg_icon` contiene el markup SVG directo del ícono. Renderizarlo con 
   <span>{red.nombre}</span>
 </a>
 ```
+
+---
+
+### 4.7 Productos
+
+**Endpoints:**
+- `GET /api/v1/web/productos` — Listado público de productos activos (paginado, filtrable, ordenable)
+- `GET /api/v1/web/productos/:uuid` — Detalle de producto (incluye variantes, imágenes y SEO)
+- `GET /api/v1/web/productos-marcas` — Listado de marcas únicas (para faceta de filtros)
+
+#### Listado
+
+**Query params:**
+
+| Param    | Tipo                | Default  | Descripción                                                  |
+|----------|---------------------|----------|--------------------------------------------------------------|
+| `page`   | number              | 1        | Página actual                                                |
+| `limit`  | number (1-48)       | 12       | Items por página                                             |
+| `sort`   | string              | `recent` | `recent`\|`alpha_asc`\|`alpha_desc`\|`price_asc`\|`price_desc`|
+| `marcas` | string[] o CSV      | —        | Filtra por marca. Ej: `?marcas=Apple,Samsung`                |
+| `search` | string              | —        | Búsqueda por nombre o marca                                  |
+
+**Estructura de `data`:** `PaginatedResult<ProductoWebItem>`
+
+```typescript
+interface ProductoWebItem {
+  uuid:          string;       // identificador para el detalle (usar como slug)
+  nombre:        string;
+  marca:         string | null;
+  descripcion:   string | null;
+  condicion:     string | null;  // ej: "Nuevo", "Usado", "Restaurado"
+  preview_url:   string | null;  // URL absoluta de la imagen principal
+  min_price:     number | null;  // precio mínimo en centavos
+  max_price:     number | null;  // precio máximo en centavos
+  moneda_codigo: string | null;  // ej: "ARS", "USD"
+  num_colores:   number;         // cantidad de colores disponibles
+  created_at:    string;         // ISO 8601
+}
+```
+
+**Mostrar precios:**
+Los precios vienen en **centavos** (enteros). Para mostrarlos:
+```typescript
+function formatPrice(cents: number, code: string): string {
+  return `${code} $${(cents / 100).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+}
+// formatPrice(125000, 'ARS') → "ARS $1.250,00"
+```
+
+#### Detalle
+
+```
+GET /api/v1/web/productos/:uuid
+```
+
+Devuelve un objeto `Producto` con la siguiente estructura:
+
+```typescript
+interface Producto {
+  uuid:                string;
+  nombre:              string;
+  descripcion:         string | null;        // puede contener HTML
+  marca:               string | null;
+  condicion_uuid:      string | null;
+  condicion:           string | null;
+  garantia_uuid:       string | null;
+  garantia:            string | null;
+  atributos_uuid:      string | null;
+  atributos_plantilla: Record<string, string> | null;  // schema base de atributos
+  atributos:           Record<string, unknown> | null; // valores reales
+  estado:              'activo' | 'inactivo';
+  variantes:           Variante[];
+  seo:                 ProductoSeo | null;
+  created_at:          string;
+  updated_at:          string;
+}
+
+interface Variante {
+  uuid:             string;
+  color_uuid:       string | null;
+  color_nombre:     string | null;
+  color_imagen_url: string | null;  // swatch / muestra del color
+  moneda_uuid:      string | null;
+  moneda_codigo:    string | null;
+  moneda_nombre:    string | null;
+  precio:           number;          // en centavos (entero)
+  descuento:        number;          // 0-9999 (en centésimas, ej. 2550 = 25.50%)
+  stock:            number;
+  imagenes:         VarianteImagen[];
+  created_at:       string;
+  updated_at:       string;
+}
+
+interface VarianteImagen {
+  uuid:         string;
+  archivo_uuid: string;
+  url:          string;
+  alt:          string | null;
+  title:        string | null;
+  orden:        number;
+}
+
+interface ProductoSeo {
+  title:            string | null;
+  meta_description: string | null;
+  meta_keywords:    string | null;
+  og_title:         string | null;
+  og_description:   string | null;
+  scripts_head:     string | null;
+  scripts_body:     string | null;
+}
+```
+
+**Comportamiento:**
+- Solo retorna productos con `estado='activo'`. Si está inactivo o no existe → 404.
+- Las variantes vienen sin orden particular (puedes ordenarlas por `precio` o `color_nombre` en el cliente).
+- Las imágenes de cada variante están ordenadas por `orden ASC`.
+- El campo `descripcion` puede contener HTML — sanitizar antes de renderizar.
+- El bloque `seo` puede usarse para inyectar metatags `<title>`, `<meta name=description>`, `og:*` en el head.
+
+#### Marcas (faceta de filtros)
+
+```
+GET /api/v1/web/productos-marcas
+```
+
+**Estructura de `data`:**
+
+```typescript
+interface MarcaFacet {
+  marca: string;  // ej: "Apple"
+  total: number;  // cantidad de productos activos con esa marca
+}
+```
+
+**Casos de presentación:**
+- Cards de producto en grilla con: imagen, nombre, marca, precio mínimo y "X colores disponibles".
+- Detalle: carrusel de imágenes (combinando todas las variantes), selector de color/almacenamiento que actualiza el precio dinámicamente, tabla de especificaciones con `atributos`.
+- Cinta de descuento si `descuento > 0` en alguna variante.
 
 ---
 

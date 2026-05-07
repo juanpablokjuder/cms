@@ -670,4 +670,144 @@ export class ProductoRepository {
     if (!rows[0]) throw new AppError('Producto no encontrado.', 404, 'NOT_FOUND');
     await db.query<UpsertResult>(`UPDATE productos SET deleted_at = NOW() WHERE id = ?`, [rows[0].id]);
   }
+
+  // ══ Listado público para Storefront (módulo web) ═════════════════════════════
+
+  /**
+   * Listado público de productos activos. Soporta ordenamiento, filtros por marca
+   * y paginación. Calcula min/max precio agregando sobre productos_colores.
+   */
+  async listProductosForWeb(opts: {
+    page:    number;
+    limit:   number;
+    sort?:   'recent' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc';
+    marcas?: string[];
+    search?: string;
+  }): Promise<PaginatedResult<PublicProductoWeb>> {
+    const offset  = (opts.page - 1) * opts.limit;
+    const where:  string[] = [`p.deleted_at IS NULL`, `p.estado = 'activo'`];
+    const params: unknown[] = [];
+
+    if (opts.marcas && opts.marcas.length > 0) {
+      const ph = opts.marcas.map(() => '?').join(', ');
+      where.push(`p.marca IN (${ph})`);
+      params.push(...opts.marcas);
+    }
+    if (opts.search && opts.search.trim() !== '') {
+      where.push(`(p.nombre LIKE ? OR p.marca LIKE ?)`);
+      const term = `%${opts.search.trim()}%`;
+      params.push(term, term);
+    }
+
+    let orderBy = 'p.created_at DESC';
+    if (opts.sort === 'alpha_asc')  orderBy = 'p.nombre ASC';
+    if (opts.sort === 'alpha_desc') orderBy = 'p.nombre DESC';
+    if (opts.sort === 'price_asc')  orderBy = 'min_price ASC';
+    if (opts.sort === 'price_desc') orderBy = 'min_price DESC';
+
+    const whereSql = where.join(' AND ');
+
+    const countRows = await db.query<[{ total: number }]>(
+      `SELECT COUNT(*) AS total FROM productos p WHERE ${whereSql}`,
+      params,
+    );
+    const total = Number(countRows[0]?.total ?? 0);
+
+    interface ListRow {
+      uuid: string; nombre: string; marca: string | null; descripcion: string | null;
+      condicion: string | null;
+      min_price: string | null; max_price: string | null;
+      moneda_codigo: string | null;
+      preview_slug: string | null;
+      num_colores: number;
+      created_at: Date;
+    }
+
+    const rows = await db.query<ListRow[]>(
+      `SELECT p.uuid, p.nombre, p.marca, p.descripcion,
+              cond.nombre AS condicion,
+              (SELECT MIN(pc.precio) FROM productos_colores pc
+                 WHERE pc.producto_id = p.id AND pc.deleted_at IS NULL) AS min_price,
+              (SELECT MAX(pc.precio) FROM productos_colores pc
+                 WHERE pc.producto_id = p.id AND pc.deleted_at IS NULL) AS max_price,
+              (SELECT m.codigo FROM productos_colores pc
+                 LEFT JOIN monedas m ON m.id = pc.moneda_id
+                 WHERE pc.producto_id = p.id AND pc.deleted_at IS NULL
+                 ORDER BY pc.created_at ASC LIMIT 1) AS moneda_codigo,
+              (SELECT a.slug FROM productos_imagenes pi
+                 JOIN archivos a ON a.id = pi.archivo_id AND a.deleted_at IS NULL
+                 WHERE pi.producto_id = p.id AND pi.deleted_at IS NULL
+                 ORDER BY pi.orden ASC LIMIT 1) AS preview_slug,
+              (SELECT COUNT(DISTINCT pc.color_id) FROM productos_colores pc
+                 WHERE pc.producto_id = p.id AND pc.deleted_at IS NULL AND pc.color_id IS NOT NULL) AS num_colores,
+              p.created_at
+       FROM productos p
+       LEFT JOIN productos_condiciones cond ON cond.id = p.condicion_id
+       WHERE ${whereSql}
+       ORDER BY ${orderBy}
+       LIMIT ? OFFSET ?`,
+      [...params, opts.limit, offset],
+    );
+
+    return {
+      data: rows.map(r => ({
+        uuid:          r.uuid,
+        nombre:        r.nombre,
+        marca:         r.marca,
+        descripcion:   r.descripcion,
+        condicion:     r.condicion,
+        preview_url:   r.preview_slug ? buildUrl(r.preview_slug) : null,
+        min_price:     r.min_price !== null ? Number(r.min_price) : null,
+        max_price:     r.max_price !== null ? Number(r.max_price) : null,
+        moneda_codigo: r.moneda_codigo,
+        num_colores:   Number(r.num_colores ?? 0),
+        created_at:    r.created_at,
+      })),
+      meta: { total, page: opts.page, limit: opts.limit, totalPages: Math.ceil(total / opts.limit) },
+    };
+  }
+
+  /**
+   * Lista todas las marcas únicas de productos activos (para faceta de filtros).
+   */
+  async listMarcasForWeb(): Promise<Array<{ marca: string; total: number }>> {
+    return db.query<Array<{ marca: string; total: number }>>(
+      `SELECT marca, COUNT(*) AS total
+       FROM productos
+       WHERE deleted_at IS NULL AND estado = 'activo' AND marca IS NOT NULL AND marca != ''
+       GROUP BY marca
+       ORDER BY marca ASC`,
+    );
+  }
+
+  /**
+   * Detalle público de un producto. Sólo retorna si está activo.
+   * Reutiliza `findProductoByUuid` y valida estado.
+   */
+  async findActiveByUuid(uuid: string): Promise<PublicProducto> {
+    const rows = await db.query<{ estado: string }[]>(
+      `SELECT estado FROM productos WHERE uuid = ? AND deleted_at IS NULL LIMIT 1`,
+      [uuid],
+    );
+    if (!rows[0] || rows[0].estado !== 'activo') {
+      throw new AppError('Producto no encontrado.', 404, 'NOT_FOUND');
+    }
+    return this.findProductoByUuid(uuid);
+  }
+}
+
+// ─── Tipos públicos del módulo web ───────────────────────────────────────────
+
+export interface PublicProductoWeb {
+  uuid:          string;
+  nombre:        string;
+  marca:         string | null;
+  descripcion:   string | null;
+  condicion:     string | null;
+  preview_url:   string | null;
+  min_price:     number | null;
+  max_price:     number | null;
+  moneda_codigo: string | null;
+  num_colores:   number;
+  created_at:    Date;
 }

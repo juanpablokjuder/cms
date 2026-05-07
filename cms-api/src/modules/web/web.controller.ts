@@ -27,6 +27,19 @@ const slugParamSchema = z.object({
   slug: z.string().min(1, 'slug requerido.'),
 });
 
+const uuidParamSchema = z.object({
+  uuid: z.string().uuid('UUID inválido.'),
+});
+
+const productosQuerySchema = z.object({
+  page:   z.coerce.number().int().positive().default(1),
+  limit:  z.coerce.number().int().min(1).max(48).default(12),
+  sort:   z.enum(['recent', 'alpha_asc', 'alpha_desc', 'price_asc', 'price_desc']).default('recent'),
+  marcas: z.union([z.string(), z.array(z.string())]).optional()
+            .transform(v => Array.isArray(v) ? v : (typeof v === 'string' && v !== '' ? v.split(',') : [])),
+  search: z.string().trim().optional(),
+});
+
 // ─── Controller ───────────────────────────────────────────────────────────────
 
 export class WebController {
@@ -115,5 +128,36 @@ export class WebController {
   async getFooter(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const footer = await this.service.getFooter();
     void reply.code(200).send(apiSuccess(footer));
+  }
+
+  // ── Productos ────────────────────────────────────────────────────────────
+
+  /**
+   * GET /web/productos
+   * Listado público de productos activos. Soporta filtros, ordenamiento y paginación.
+   */
+  async getProductos(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const opts = productosQuerySchema.parse(request.query);
+    const result = await this.service.getProductos(opts);
+    void reply.code(200).send(apiSuccess(result));
+  }
+
+  /**
+   * GET /web/productos/:uuid
+   * Detalle público de un producto activo (incluye variantes, imágenes y SEO).
+   */
+  async getProductoByUuid(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const { uuid } = uuidParamSchema.parse(request.params);
+    const producto = await this.service.getProductoByUuid(uuid);
+    void reply.code(200).send(apiSuccess(producto));
+  }
+
+  /**
+   * GET /web/productos-marcas
+   * Listado de marcas únicas (para faceta de filtros).
+   */
+  async getProductosMarcas(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const marcas = await this.service.getMarcas();
+    void reply.code(200).send(apiSuccess(marcas));
   }
 }
