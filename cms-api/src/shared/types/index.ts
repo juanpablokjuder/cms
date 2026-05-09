@@ -444,3 +444,45 @@ export interface PublicFooter {
   updated_at:     Date;
 }
 
+// ─── Locales ──────────────────────────────────────────────────────────────────
+
+export interface HorarioDia {
+  dia:      'Lunes' | 'Martes' | 'Mi\u00e9rcoles' | 'Jueves' | 'Viernes' | 'S\u00e1bado' | 'Domingo';
+  activo:   boolean;
+  apertura: string | null;
+  cierre:   string | null;
+}
+
+export interface LocalRow {
+  id:          number;
+  uuid:        string;
+  nombre:      string;
+  descripcion: string;
+  direccion:   string | null;
+  telefono:    string | null;
+  horarios:    string | null;  // JSON string of HorarioDia[]
+  deleted_at:  Date | null;
+  created_at:  Date;
+  updated_at:  Date;
+}
+
+export interface LocalImagenItem {
+  archivo_uuid: string;
+  url:          string;
+  alt:          string | null;
+  title:        string | null;
+  orden:        number;
+}
+
+export interface PublicLocal {
+  uuid:        string;
+  nombre:      string;
+  descripcion: string;
+  direccion:   string | null;
+  telefono:    string | null;
+  horarios:    HorarioDia[] | null;
+  imagenes:    LocalImagenItem[];
+  created_at:  Date;
+  updated_at:  Date;
+}
+

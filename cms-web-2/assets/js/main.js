@@ -54,43 +54,120 @@ document.addEventListener('DOMContentLoaded', () => {
         revealEls.forEach(el => el.classList.add('in'));
     }
 
-    // ── Hero slider (rotación + dots) ──────────────────────────────
-    const slides = document.querySelectorAll('.vm-hero-slide');
-    const dots   = document.querySelectorAll('.vm-hero-dot');
+    // ── Hero slider infinito (crossfade + Ken Burns + progress bar) ─
+    const heroEl      = document.querySelector('.vm-hero');
+    const slides      = Array.from(document.querySelectorAll('.vm-hero-slide'));
+    const dots        = Array.from(document.querySelectorAll('.vm-hero-dot'));
+    const progressBar = document.getElementById('vm-hero-progress-bar');
+    const SLIDE_DURATION = 6000;
+
     if (slides.length > 1) {
-        let active = 0;
-        let timer  = null;
+        let current   = 0;
+        let autoTimer = null;
 
-        const go = (i) => {
-            slides.forEach(s => s.dataset.active = 'false');
-            dots.forEach(d => d.setAttribute('aria-current', 'false'));
-            slides[i].dataset.active = 'true';
-            dots[i]?.setAttribute('aria-current', 'true');
-            active = i;
+        const activate = (rawIdx) => {
+            // Wrap para loop infinito en ambas direcciones
+            const next = ((rawIdx % slides.length) + slides.length) % slides.length;
+            if (next === current && slides[current].classList.contains('is-active')) return;
+
+            slides[current].classList.remove('is-active');
+            dots[current]?.classList.remove('is-active');
+            dots[current]?.setAttribute('aria-selected', 'false');
+
+            current = next;
+
+            slides[current].classList.add('is-active');
+            dots[current]?.classList.add('is-active');
+            dots[current]?.setAttribute('aria-selected', 'true');
+
+            // Reiniciar progress bar
+            if (progressBar) {
+                progressBar.classList.remove('is-running');
+                progressBar.style.transition = 'none';
+                progressBar.style.width      = '0%';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    progressBar.classList.add('is-running');
+                }));
+            }
         };
-        const next = () => go((active + 1) % slides.length);
 
-        const startAuto = () => { timer = setInterval(next, 7000); };
-        const stopAuto  = () => { if (timer) clearInterval(timer); };
+        const goNext  = () => activate(current + 1);
+        const goPrev  = () => activate(current - 1);
 
+        const startAuto = () => {
+            stopAuto();
+            autoTimer = setInterval(goNext, SLIDE_DURATION);
+        };
+        const stopAuto = () => { clearInterval(autoTimer); autoTimer = null; };
+
+        // Dots
         dots.forEach((d, i) => {
-            d.addEventListener('click', () => { stopAuto(); go(i); startAuto(); });
+            d.addEventListener('click', () => { stopAuto(); activate(i); startAuto(); });
         });
-        document.querySelector('.vm-hero')?.addEventListener('mouseenter', stopAuto);
-        document.querySelector('.vm-hero')?.addEventListener('mouseleave', startAuto);
 
+        // Flechas
+        document.querySelector('.vm-hero-arrow--prev')
+            ?.addEventListener('click', () => { stopAuto(); goPrev(); startAuto(); });
+        document.querySelector('.vm-hero-arrow--next')
+            ?.addEventListener('click', () => { stopAuto(); goNext(); startAuto(); });
+
+        // Pausa al hover / focus
+        heroEl?.addEventListener('mouseenter', stopAuto);
+        heroEl?.addEventListener('mouseleave', startAuto);
+        heroEl?.addEventListener('focusin',    stopAuto);
+        heroEl?.addEventListener('focusout',   startAuto);
+
+        // Navegación por teclado
+        heroEl?.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft')  { stopAuto(); goPrev(); startAuto(); }
+            if (e.key === 'ArrowRight') { stopAuto(); goNext(); startAuto(); }
+        });
+
+        // Soporte táctil (swipe)
+        let touchStartX = 0;
+        heroEl?.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        heroEl?.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) < 50) return;
+            stopAuto();
+            dx < 0 ? goNext() : goPrev();
+            startAuto();
+        }, { passive: true });
+
+        // Iniciar — el primer slide ya tiene .is-active en el HTML
+        if (progressBar) {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                progressBar.classList.add('is-running');
+            }));
+        }
         startAuto();
     }
 
-    // ── Header sticky shadow al scrollear ──────────────────────────
+    // ── Header sticky shadow + scrolled class ──────────────────────
     const header = document.querySelector('.vm-header');
     if (header) {
         const onScroll = () => {
-            header.style.boxShadow = window.scrollY > 4 ? '0 2px 12px rgba(15, 23, 42, 0.08)' : 'none';
+            if (window.scrollY > 40) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+                header.style.boxShadow = '';
+            }
         };
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
     }
+
+    // ── Stagger delays: asignar data-delay a cards dentro de grids ─
+    document.querySelectorAll('.vm-product-grid, .vm-news-grid, .vm-service-grid').forEach(grid => {
+        const cards = grid.querySelectorAll('.vm-reveal');
+        cards.forEach((card, i) => {
+            const delay = Math.min(i + 1, 6);
+            if (!card.dataset.delay) card.dataset.delay = delay;
+        });
+    });
 
     // ── Formulario de contacto (validación cliente + WhatsApp fallback) ──
     const contactForm = document.getElementById('vm-contact-form');

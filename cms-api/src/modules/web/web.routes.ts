@@ -74,6 +74,13 @@ export async function webRoutes(fastify: FastifyInstance): Promise<void> {
     (req, rep) => ctrl.getFooter(req, rep),
   );
 
+  // ── SEO público ──────────────────────────────────────────────────────────
+  fastify.get(
+    '/seo/:entity_type/:entity_id',
+    { preHandler: [authenticateWebToken] },
+    (req, rep) => ctrl.getSeoByEntity(req, rep),
+  );
+
   // ── Productos ─────────────────────────────────────────────────────────────
   fastify.get(
     '/productos',

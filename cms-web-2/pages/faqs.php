@@ -3,7 +3,7 @@
  * /faqs — Preguntas frecuentes con acordeón semántico (<details>).
  */
 $currentRoute = 'faqs';
-$faqs         = api_faqs();
+$faqs = api_faqs();
 
 // JSON-LD para SEO
 $jsonLd = '';
@@ -12,8 +12,8 @@ if (!empty($faqs)) {
     foreach ($faqs as $g) {
         foreach ($g['items'] ?? [] as $it) {
             $schema['mainEntity'][] = [
-                '@type'          => 'Question',
-                'name'           => $it['pregunta'] ?? '',
+                '@type' => 'Question',
+                'name' => $it['pregunta'] ?? '',
                 'acceptedAnswer' => ['@type' => 'Answer', 'text' => strip_tags($it['respuesta'] ?? '')],
             ];
         }
@@ -21,19 +21,23 @@ if (!empty($faqs)) {
     $jsonLd = json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
-$seo = [
-    'title'       => 'Preguntas frecuentes · ' . SITE_NAME,
+$cmsSeo = api_seo('pagina', 'faqs');
+
+$seo = merge_seo([
+    'title' => 'Preguntas frecuentes · ' . SITE_NAME,
     'description' => 'Respuestas a las consultas más comunes sobre envíos, garantías, financiación y servicio post-venta.',
-    'url'         => site_url('faqs'),
-];
+    'url' => site_url('faqs'),
+], $cmsSeo);
 
 $extraStyles = $jsonLd ? '<script type="application/ld+json">' . $jsonLd . '</script>' : '';
+if (!empty($cmsSeo['scripts_head']))
+    $extraStyles .= "\n" . $cmsSeo['scripts_head'];
 
 require __DIR__ . '/../components/head.php';
 require __DIR__ . '/../components/header.php';
 
 $crumbs = [
-    ['label' => 'Inicio',  'href' => '/'],
+    ['label' => 'Inicio', 'href' => '/'],
     ['label' => 'Preguntas frecuentes'],
 ];
 ?>
@@ -46,7 +50,8 @@ $crumbs = [
         <div class="vm-section-head" style="display:block">
             <span class="vm-eyebrow">Soporte</span>
             <h1 class="text-4xl md:text-5xl">Preguntas frecuentes</h1>
-            <p class="text-slate-600 mt-3 max-w-2xl">¿Tenés dudas? Mirá las consultas más comunes. Si no encontrás lo que buscás, escribinos.</p>
+            <p class="text-slate-600 mt-3 max-w-2xl">¿Tenés dudas? Mirá las consultas más comunes. Si no encontrás lo
+                que buscás, escribinos.</p>
         </div>
 
         <?php if (!empty($faqs)): ?>
@@ -54,18 +59,18 @@ $crumbs = [
                 <section class="vm-faq-group" aria-labelledby="g-<?= e($g['uuid']) ?>">
                     <h2 class="vm-faq-group-title font-display" id="g-<?= e($g['uuid']) ?>"><?= e($g['titulo']) ?></h2>
                     <?php if (!empty($g['items'])):
-                        usort($g['items'], fn($a,$b) => ($a['orden']??0) <=> ($b['orden']??0));
+                        usort($g['items'], fn($a, $b) => ($a['orden'] ?? 0) <=> ($b['orden'] ?? 0));
                         foreach ($g['items'] as $it):
-                    ?>
-                        <details class="vm-faq">
-                            <summary>
-                                <span><?= e($it['pregunta']) ?></span>
-                            </summary>
-                            <div class="vm-faq-body">
-                                <?= sanitize_html($it['respuesta']) ?>
-                            </div>
-                        </details>
-                    <?php
+                            ?>
+                            <details class="vm-faq">
+                                <summary>
+                                    <span><?= e($it['pregunta']) ?></span>
+                                </summary>
+                                <div class="vm-faq-body">
+                                    <?= sanitize_html($it['respuesta']) ?>
+                                </div>
+                            </details>
+                            <?php
                         endforeach;
                     endif; ?>
                 </section>
@@ -77,7 +82,8 @@ $crumbs = [
                 <details class="vm-faq">
                     <summary><span>¿Cuánto tarda el envío?</span></summary>
                     <div class="vm-faq-body">
-                        <p>En CABA y GBA entregamos en 24-72 horas hábiles. Al interior del país el tiempo varía entre 3 y 7 días según la zona.</p>
+                        <p>En CABA y GBA entregamos en 24-72 horas hábiles. Al interior del país el tiempo varía entre 3 y 7
+                            días según la zona.</p>
                     </div>
                 </details>
                 <details class="vm-faq">
@@ -89,7 +95,8 @@ $crumbs = [
                 <details class="vm-faq">
                     <summary><span>¿Cuáles son los medios de pago disponibles?</span></summary>
                     <div class="vm-faq-body">
-                        <p>Aceptamos tarjetas de crédito y débito (Visa, Mastercard, Amex), transferencia bancaria y pagos en efectivo en sucursales de Pago Fácil/Rapipago.</p>
+                        <p>Aceptamos tarjetas de crédito y débito (Visa, Mastercard, Amex), transferencia bancaria y pagos
+                            en efectivo en sucursales de Pago Fácil/Rapipago.</p>
                     </div>
                 </details>
             </section>
@@ -99,13 +106,15 @@ $crumbs = [
                 <details class="vm-faq">
                     <summary><span>¿Los productos tienen garantía oficial?</span></summary>
                     <div class="vm-faq-body">
-                        <p>Sí, todos nuestros productos cuentan con 12 meses de garantía oficial del fabricante, gestionable a través del servicio técnico autorizado.</p>
+                        <p>Sí, todos nuestros productos cuentan con 12 meses de garantía oficial del fabricante, gestionable
+                            a través del servicio técnico autorizado.</p>
                     </div>
                 </details>
                 <details class="vm-faq">
                     <summary><span>¿Qué hago si mi equipo presenta un problema?</span></summary>
                     <div class="vm-faq-body">
-                        <p>Contactanos por WhatsApp o email dentro del período de garantía. Te indicaremos el procedimiento para gestionar la reparación o reemplazo.</p>
+                        <p>Contactanos por WhatsApp o email dentro del período de garantía. Te indicaremos el procedimiento
+                            para gestionar la reparación o reemplazo.</p>
                     </div>
                 </details>
             </section>

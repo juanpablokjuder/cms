@@ -18,6 +18,7 @@ import { webRoutes } from './modules/web/web.routes.js';
 import { empresaRoutes } from './modules/empresa/empresa.routes.js';
 import { productoRoutes } from './modules/productos/producto.routes.js';
 import { seoRoutes } from './modules/seo/seo.routes.js';
+import { localRoutes } from './modules/locales/local.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -84,6 +85,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(empresaRoutes, { prefix: `${env.API_PREFIX}/empresa` });
   await app.register(productoRoutes, { prefix: env.API_PREFIX });
   await app.register(seoRoutes,     { prefix: `${env.API_PREFIX}/admin/seo` });
+  await app.register(localRoutes,   { prefix: `${env.API_PREFIX}/locales` });
 
   return app;
 }

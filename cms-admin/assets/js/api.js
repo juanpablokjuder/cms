@@ -133,6 +133,13 @@ const Api = (() => {
     const upsertSeo = (entityType, entityUuid, data) =>
         request('api/proxy-seo-upsert.php', { method: 'POST', body: { entity_type: entityType, entity_uuid: entityUuid, ...data } });
 
+    // ─── Locales ──────────────────────────────────────────────────────────
+    const getLocales = (page = 1, limit = 20) => request('api/proxy-locales-list.php', { params: { page, limit } });
+    const getLocal   = (uuid) => request('api/proxy-locales-get.php', { params: { uuid } });
+    const createLocal = (data) => request('api/proxy-locales-create.php', { method: 'POST', body: data });
+    const updateLocal = (uuid, data) => request('api/proxy-locales-update.php', { method: 'POST', body: { uuid, ...data } });
+    const deleteLocal = (uuid) => request('api/proxy-locales-delete.php', { method: 'POST', body: { uuid } });
+
     return {
         request,
         login, logout, getMe,
@@ -153,6 +160,7 @@ const Api = (() => {
         getProductosAtributos, getProductosAtributosAll, getProductoAtributo, createProductoAtributo, updateProductoAtributo, deleteProductoAtributo,
         getProductos, getProducto, createProducto, updateProducto, deleteProducto,
         getSeo, upsertSeo,
+        getLocales, getLocal, createLocal, updateLocal, deleteLocal,
     };
 })();
 

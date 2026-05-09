@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { WebService } from './web.service.js';
 import { apiSuccess } from '../../shared/utils/api-response.js';
+import { SEO_ENTITY_TYPES } from '../seo/dtos/upsert-seo.dto.js';
 
 // ─── Schemas de validación ────────────────────────────────────────────────────
 
@@ -38,6 +39,11 @@ const productosQuerySchema = z.object({
   marcas: z.union([z.string(), z.array(z.string())]).optional()
             .transform(v => Array.isArray(v) ? v : (typeof v === 'string' && v !== '' ? v.split(',') : [])),
   search: z.string().trim().optional(),
+});
+
+const entitySeoParamsSchema = z.object({
+  entity_type: z.enum(SEO_ENTITY_TYPES),
+  entity_id:   z.string().min(1).max(100),
 });
 
 // ─── Controller ───────────────────────────────────────────────────────────────
@@ -159,5 +165,18 @@ export class WebController {
   async getProductosMarcas(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const marcas = await this.service.getMarcas();
     void reply.code(200).send(apiSuccess(marcas));
+  }
+
+  // ── SEO público ───────────────────────────────────────────────────────────
+
+  /**
+   * GET /web/seo/:entity_type/:entity_id
+   * Devuelve los metadatos SEO de una entidad (producto, noticia, pagina, etc.)
+   * Retorna data: null si no hay SEO configurado para esa entidad.
+   */
+  async getSeoByEntity(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const { entity_type, entity_id } = entitySeoParamsSchema.parse(request.params);
+    const seo = await this.service.getSeoByEntity(entity_type, entity_id);
+    void reply.code(200).send(apiSuccess(seo));
   }
 }

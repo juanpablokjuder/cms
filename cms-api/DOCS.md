@@ -2,7 +2,7 @@
 
 > **Módulo:** `cms-api`
 > **Versión:** 1.0.0
-> **Última actualización:** 2026-05-03 — Nuevo módulo `web` con endpoints públicos para el frontend (banners, noticias, nosotros, servicios, faqs, footer). Token estático `WEB_API_TOKEN`.
+> **Última actualización:** 2026-05-09 — Nuevo módulo `locales` (ABM de sucursales con galería de imágenes y SEO). Tipo SEO `local` agregado a `SEO_ENTITY_TYPES`.
 > **Stack:** Node.js 22 LTS · Fastify v5 · MariaDB · TypeScript 5
 
 ---
@@ -25,6 +25,7 @@
    - [FAQs](#módulo-faqs)
    - [Footer](#módulo-footer)
    - [Web (endpoints públicos)](#módulo-web)
+   - [Locales](#módulo-locales)
 7. [Seguridad](#seguridad)
 8. [Utilidades Compartidas](#utilidades-compartidas)
 9. [Scripts Disponibles](#scripts-disponibles)
@@ -101,7 +102,7 @@ El archivo `src/config/env.ts` valida todas las variables mediante **Zod**. Si f
 | `JWT_SECRET`          | **Sí**    | —                | Secreto HS256 (mínimo 32 caracteres)                      |
 | `JWT_EXPIRES_IN`      | No        | `15m`            | TTL del token JWT                                         |
 | `BCRYPT_ROUNDS`       | No        | `12`             | Rondas de bcrypt para hash de contraseñas (10–15)         |
-| `PUBLIC_API_URL`      | No        | `http://localhost:3000` | URL pública de la API (sin barra final). Usada para construir URLs absolutas en las respuestas JSON. Ejemplo: `http://192.168.0.20:3000` |
+| `PUBLIC_API_URL`      | No        | `http://localhost:3000` | URL pública de la API (sin barra final). Usada para construir URLs absolutas en las respuestas JSON. Ejemplo: `http://192.168.0.64:3000` |
 | `API_PREFIX`          | No        | `/api/v1`        | Prefijo base de todos los endpoints                       |
 | `UPLOADS_DIR`         | No        | `uploads`        | Directorio relativo para almacenar archivos subidos       |
 | `WEB_API_TOKEN`       | **Sí**    | —                | Token estático (mín. 32 chars) para autenticar el frontend web. Generar con `openssl rand -hex 32` |

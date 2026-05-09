@@ -39,6 +39,13 @@ Decoupled CMS with three isolated modules. Every response must respect each modu
 ### 3. CMS-WEB — `/cms-web`
 - **Stack:** PHP (nativo) · JS · Fetch API · jQuery
 - **Rule:** Lightweight, replicable template. Strict logical decoupling for easy restyling.
+- **Data flow:** Server-side PHP fetches from cms-api using `Authorization: Bearer $token` (not `X-API-Token`).
+- **Env vars:** `CMS_API_WEB` (API URL), `CMS_WEB_TOKEN` (static token). Dev server: `php -S localhost:8000`
+
+### 4. CMS-WEB-2 — `/cms-web-2`
+- **Stack:** PHP (nativo) · JS · Fetch API · jQuery
+- **Differs from cms-web:** Structured `pages/` directory (`home.php`, `noticias.php`, `noticia-detalle.php`, `productos.php`, etc.) + JS-facing `api/proxy-*.php` layer for client-side fetches.
+- **Env vars:** `CMS_API_URL` (API URL), `CMS_WEB_TOKEN` (same token key as cms-web). Dev server: `php -S localhost:8001`
 
 ---
 
@@ -55,6 +62,8 @@ Decoupled CMS with three isolated modules. Every response must respect each modu
 - **Clean Code:** Guard clauses, descriptive names, single-responsibility functions.
 - **Security:** Strict input validation (Zod in API, PHP type hints + filter_var in proxies), prepared statements in MariaDB repositories, secure CORS/JWT headers.
 - **ES6+:** Arrow functions, destructuring, async/await — even inside jQuery flows.
+- **DB (cms-api):** Uses `mariadb` npm package — NOT `mysql2`. Pool option `autoJsonMap: false` means `JSON_ARRAYAGG` results are raw strings; always `JSON.parse()` them in the repository.
+- **Migrations:** Next sequential prefix is `015_` (`014_create_seo_metadata.sql` is the latest). Never reuse an existing prefix.
 
 ## Workflow
 

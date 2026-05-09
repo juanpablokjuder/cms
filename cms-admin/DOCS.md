@@ -115,7 +115,7 @@ cms-admin/
 
 | Constante          | Valor por defecto               | Descripción                                            |
 |--------------------|---------------------------------|--------------------------------------------------------|
-| `API_BASE_URL`     | `http://192.168.0.20:3000/api/v1` | URL base de la `cms-api`                             |
+| `API_BASE_URL`     | `http://192.168.0.64:3000/api/v1` | URL base de la `cms-api`                             |
 | `APP_NAME`         | `CMS Admin`                     | Nombre de la aplicación                               |
 | `APP_VERSION`      | `1.0.0`                         | Versión actual                                        |
 | `SESSION_LIFETIME` | `900` (15 minutos)              | Duración de sesión PHP (debe coincidir con `JWT_EXPIRES_IN`) |

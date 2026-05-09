@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SEO_ENTITY_TYPES = ['producto', 'noticia', 'servicio', 'nosotros', 'empresa', 'pagina'] as const;
+export const SEO_ENTITY_TYPES = ['producto', 'noticia', 'servicio', 'nosotros', 'empresa', 'pagina', 'local'] as const;
 export type SeoEntityType = typeof SEO_ENTITY_TYPES[number];
 
 export const seoDataSchema = z.object({

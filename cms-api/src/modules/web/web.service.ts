@@ -5,6 +5,9 @@ import { ServicioService } from '../servicios/servicio.service.js';
 import { FaqService } from '../faqs/faq.service.js';
 import { FooterService } from '../footer/footer.service.js';
 import { ProductoRepository } from '../productos/producto.repository.js';
+import { SeoRepository } from '../seo/seo.repository.js';
+import type { PublicSeoMetadata } from '../seo/seo.repository.js';
+import type { SeoEntityType } from '../seo/dtos/upsert-seo.dto.js';
 import type { PublicProducto, PublicProductoWeb } from '../productos/producto.repository.js';
 import type {
   PublicBanner,
@@ -40,6 +43,7 @@ export class WebService {
   private readonly faqService:      FaqService;
   private readonly footerService:   FooterService;
   private readonly productoRepo:    ProductoRepository;
+  private readonly seoRepo:         SeoRepository;
 
   constructor() {
     this.bannerService   = new BannerService();
@@ -49,6 +53,7 @@ export class WebService {
     this.faqService      = new FaqService();
     this.footerService   = new FooterService();
     this.productoRepo    = new ProductoRepository();
+    this.seoRepo         = new SeoRepository();
   }
 
   // ─── Banners ───────────────────────────────────────────────────────────────
@@ -132,5 +137,15 @@ export class WebService {
 
   async getMarcas(): Promise<Array<{ marca: string; total: number }>> {
     return this.productoRepo.listMarcasForWeb();
+  }
+
+  // ─── SEO público ────────────────────────────────────────────────────────────────
+
+  /**
+   * Metadatos SEO de cualquier entidad (producto, noticia, pagina, etc.).
+   * Retorna null si no hay SEO configurado para esa entidad.
+   */
+  async getSeoByEntity(entityType: SeoEntityType, entityId: string): Promise<PublicSeoMetadata | null> {
+    return this.seoRepo.findByEntity(entityType, entityId);
   }
 }

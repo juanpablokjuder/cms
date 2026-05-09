@@ -3,7 +3,7 @@
  * /noticias/:slug — Detalle de noticia (vista de lectura inmersiva).
  */
 $currentRoute = 'noticias';
-$noticia      = $slugArg ? api_noticia_by_slug($slugArg) : null;
+$noticia = $slugArg ? api_noticia_by_slug($slugArg) : null;
 
 if (!$noticia) {
     http_response_code(404);
@@ -12,20 +12,42 @@ if (!$noticia) {
 }
 
 $hero = first_image($noticia['imagenes'] ?? []);
+$cmsSeo = api_seo('noticia', $noticia['uuid']);
 
-$seo = [
-    'title'       => $noticia['titulo'] . ' · ' . SITE_NAME,
+$seo = merge_seo([
+    'title' => $noticia['titulo'] . ' · ' . SITE_NAME,
     'description' => truncate($noticia['subtitulo'] ?? strip_tags($noticia['texto']), 160),
-    'url'         => site_url('noticias/' . $noticia['slug']),
-    'image'       => $hero['url'] ?? '',
-    'type'        => 'article',
+    'url' => site_url('noticias/' . $noticia['slug']),
+    'image' => $hero['url'] ?? '',
+    'type' => 'article',
+    'published_time' => $noticia['created_at'] ?? '',
+], $cmsSeo);
+
+// Inyectar scripts_body si el CMS lo tiene configurado
+$scriptsBody = $cmsSeo['scripts_body'] ?? '';
+
+// JSON-LD Article (Schema.org)
+$articleSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'NewsArticle',
+    'headline' => $noticia['titulo'],
+    'description' => truncate($noticia['subtitulo'] ?? strip_tags($noticia['texto']), 160),
+    'url' => site_url('noticias/' . $noticia['slug']),
+    'datePublished' => $noticia['created_at'] ?? '',
+    'dateModified' => $noticia['updated_at'] ?? '',
+    'publisher' => ['@type' => 'Organization', 'name' => SITE_NAME],
 ];
+if ($hero)
+    $articleSchema['image'] = $hero['url'];
+$extraStyles = '<script type="application/ld+json">' . json_encode($articleSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
+if (!empty($cmsSeo['scripts_head']))
+    $extraStyles .= "\n" . $cmsSeo['scripts_head'];
 
 require __DIR__ . '/../components/head.php';
 require __DIR__ . '/../components/header.php';
 
 $crumbs = [
-    ['label' => 'Inicio',   'href' => '/'],
+    ['label' => 'Inicio', 'href' => '/'],
     ['label' => 'Noticias', 'href' => '/noticias'],
     ['label' => truncate($noticia['titulo'], 40)],
 ];
@@ -60,7 +82,8 @@ $crumbs = [
                 <div class="grid gap-4 mt-12 md:grid-cols-2">
                     <?php foreach ($extraImages as $img): ?>
                         <div class="overflow-hidden rounded-2xl">
-                            <img src="<?= e($img['url']) ?>" alt="<?= e($img['alt'] ?? '') ?>" loading="lazy" class="w-full h-auto">
+                            <img src="<?= e($img['url']) ?>" alt="<?= e($img['alt'] ?? '') ?>" loading="lazy"
+                                class="w-full h-auto">
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -77,3 +100,5 @@ $crumbs = [
 </section>
 
 <?php require __DIR__ . '/../components/footer.php'; ?>
+<?php if (!empty($scriptsBody))
+    echo $scriptsBody; ?>

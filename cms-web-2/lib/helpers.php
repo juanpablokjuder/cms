@@ -34,9 +34,10 @@ function site_url(string $path = ''): string
  */
 function format_price_cents(?int $cents, ?string $codigo = 'ARS'): string
 {
-    if ($cents === null) return 'Consultar';
+    if ($cents === null)
+        return 'Consultar';
     $amount = number_format($cents / 100, 2, ',', '.');
-    $code   = e($codigo ?? '');
+    $code = e($codigo ?? '');
     return trim("$code \$$amount");
 }
 
@@ -45,7 +46,8 @@ function format_price_cents(?int $cents, ?string $codigo = 'ARS'): string
  */
 function format_price_range(?int $min, ?int $max, ?string $codigo): string
 {
-    if ($min === null) return 'Consultar';
+    if ($min === null)
+        return 'Consultar';
     if ($max === null || $min === $max) {
         return format_price_cents($min, $codigo);
     }
@@ -57,7 +59,8 @@ function format_price_range(?int $min, ?int $max, ?string $codigo): string
  */
 function apply_descuento(int $cents, int $descuento): int
 {
-    if ($descuento <= 0) return $cents;
+    if ($descuento <= 0)
+        return $cents;
     return (int) round($cents * (1 - $descuento / 10000));
 }
 
@@ -66,7 +69,8 @@ function apply_descuento(int $cents, int $descuento): int
  */
 function sanitize_html(?string $html): string
 {
-    if (!$html) return '';
+    if (!$html)
+        return '';
     $allowed = '<p><br><strong><b><em><i><u><s><ul><ol><li><a><h2><h3><h4><h5><h6><blockquote><span><hr><img>';
     $clean = strip_tags($html, $allowed);
     $clean = preg_replace('/\s+on\w+\s*=\s*(?:"[^"]*"|\'[^\']*\')/i', '', $clean);
@@ -79,8 +83,8 @@ function format_date(string $iso): string
 {
     try {
         $d = new DateTime($iso);
-        $meses = [1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre'];
-        return $d->format('j') . ' de ' . $meses[(int)$d->format('n')] . ' de ' . $d->format('Y');
+        $meses = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
+        return $d->format('j') . ' de ' . $meses[(int) $d->format('n')] . ' de ' . $d->format('Y');
     } catch (Exception) {
         return $iso;
     }
@@ -89,16 +93,19 @@ function format_date(string $iso): string
 /** Trunca texto manteniendo palabras completas. */
 function truncate(?string $text, int $max = 140): string
 {
-    if (!$text) return '';
+    if (!$text)
+        return '';
     $text = strip_tags($text);
-    if (mb_strlen($text) <= $max) return $text;
+    if (mb_strlen($text) <= $max)
+        return $text;
     return rtrim(mb_substr($text, 0, $max)) . '…';
 }
 
 /** Devuelve la primera imagen ordenada por `orden` ASC. */
 function first_image(array $imagenes): ?array
 {
-    if (empty($imagenes)) return null;
+    if (empty($imagenes))
+        return null;
     usort($imagenes, fn($a, $b) => ($a['orden'] ?? 0) <=> ($b['orden'] ?? 0));
     return $imagenes[0];
 }
@@ -121,22 +128,74 @@ function gather_product_images(array $producto): array
     return $out;
 }
 
-/** Genera los meta tags SEO (title, description, og:*). */
+/** Genera los meta tags SEO (title, description, og:*, twitter:*, keywords, scripts). */
 function render_seo_meta(array $opts): string
 {
     $title = e($opts['title'] ?? SITE_NAME);
-    $desc  = e($opts['description'] ?? SITE_DESCRIPTION);
-    $url   = e($opts['url'] ?? site_url());
-    $img   = e($opts['image'] ?? '');
-    $type  = e($opts['type'] ?? 'website');
-    $out  = "<title>$title</title>\n";
+    $desc = e($opts['description'] ?? SITE_DESCRIPTION);
+    $url = e($opts['url'] ?? site_url());
+    $img = e($opts['image'] ?? '');
+    $type = e($opts['type'] ?? 'website');
+    $keywords = e($opts['keywords'] ?? SITE_KEYWORDS);
+
+    // Campos OG específicos (sobrescriben title/description si el admin los configuró)
+    $ogTitle = e($opts['og_title'] ?? $opts['title'] ?? SITE_NAME);
+    $ogDesc = e($opts['og_description'] ?? $opts['description'] ?? SITE_DESCRIPTION);
+
+    $out = "<title>$title</title>\n";
     $out .= "<meta name=\"description\" content=\"$desc\">\n";
+    if ($keywords) {
+        $out .= "<meta name=\"keywords\" content=\"$keywords\">\n";
+    }
     $out .= "<link rel=\"canonical\" href=\"$url\">\n";
-    $out .= "<meta property=\"og:type\" content=\"$type\">\n";
-    $out .= "<meta property=\"og:title\" content=\"$title\">\n";
-    $out .= "<meta property=\"og:description\" content=\"$desc\">\n";
-    $out .= "<meta property=\"og:url\" content=\"$url\">\n";
-    if ($img) $out .= "<meta property=\"og:image\" content=\"$img\">\n";
-    $out .= "<meta name=\"twitter:card\" content=\"summary_large_image\">\n";
+
+    // Open Graph
+    $out .= "<meta property=\"og:type\"        content=\"$type\">\n";
+    $out .= "<meta property=\"og:title\"       content=\"$ogTitle\">\n";
+    $out .= "<meta property=\"og:description\" content=\"$ogDesc\">\n";
+    $out .= "<meta property=\"og:url\"         content=\"$url\">\n";
+    $out .= "<meta property=\"og:site_name\"   content=\"" . e(SITE_NAME) . "\">\n";
+    if ($img) {
+        $out .= "<meta property=\"og:image\"      content=\"$img\">\n";
+        $out .= "<meta property=\"og:image:alt\"  content=\"$ogTitle\">\n";
+    }
+    if ($type === 'article' && !empty($opts['published_time'])) {
+        $out .= "<meta property=\"article:published_time\" content=\"" . e($opts['published_time']) . "\">\n";
+    }
+
+    // Twitter Card
+    $out .= "<meta name=\"twitter:card\"        content=\"summary_large_image\">\n";
+    $out .= "<meta name=\"twitter:title\"       content=\"$ogTitle\">\n";
+    $out .= "<meta name=\"twitter:description\" content=\"$ogDesc\">\n";
+    if ($img)
+        $out .= "<meta name=\"twitter:image\" content=\"$img\">\n";
+
+    // Scripts de <head> inyectados desde el CMS SEO (ej: Google Analytics, Schema.org, etc.)
+    if (!empty($opts['scripts_head'])) {
+        $out .= $opts['scripts_head'] . "\n";
+    }
+
     return $out;
+}
+
+/**
+ * Fusiona los datos SEO del CMS con los valores base de una página.
+ * Los campos del CMS tienen prioridad sobre los defaults.
+ */
+function merge_seo(array $base, ?array $cms): array
+{
+    if (!$cms)
+        return $base;
+    return array_filter([
+        'title' => (!empty($cms['title'])) ? $cms['title'] : ($base['title'] ?? null),
+        'description' => (!empty($cms['meta_description'])) ? $cms['meta_description'] : ($base['description'] ?? null),
+        'keywords' => (!empty($cms['meta_keywords'])) ? $cms['meta_keywords'] : ($base['keywords'] ?? null),
+        'og_title' => (!empty($cms['og_title'])) ? $cms['og_title'] : null,
+        'og_description' => (!empty($cms['og_description'])) ? $cms['og_description'] : null,
+        'url' => $base['url'] ?? null,
+        'image' => $base['image'] ?? null,
+        'type' => $base['type'] ?? 'website',
+        'scripts_head' => (!empty($cms['scripts_head'])) ? $cms['scripts_head'] : null,
+        'published_time' => $base['published_time'] ?? null,
+    ], fn($v) => $v !== null && $v !== '');
 }

@@ -22,19 +22,40 @@ $moneda   = $producto['variantes'][0]['moneda_codigo'] ?? 'ARS';
 
 // SEO desde el bloque "seo" del producto, con fallback a campos básicos
 $seoData = $producto['seo'] ?? [];
-$seo = [
-    'title'       => $seoData['title']            ?? ($producto['nombre'] . ' · ' . SITE_NAME),
-    'description' => $seoData['meta_description'] ?? truncate(strip_tags($producto['descripcion'] ?? ''), 160),
+$seo = merge_seo([
+    'title'       => $producto['nombre'] . ' · ' . SITE_NAME,
+    'description' => truncate(strip_tags($producto['descripcion'] ?? ''), 160),
     'url'         => site_url('productos/' . $producto['uuid']),
     'image'       => $imgs[0]['url'] ?? '',
     'type'        => 'product',
-];
+], $seoData ?: null);
 
+$scriptsBody = $seoData['scripts_body'] ?? '';
 $extraStyles = '';
 if (!empty($seoData['scripts_head'])) {
-    // Solo permitimos scripts del propio CMS; idealmente sanitizar más
     $extraStyles = $seoData['scripts_head'];
 }
+
+// JSON-LD Product schema
+$productSchema = [
+    '@context' => 'https://schema.org',
+    '@type'    => 'Product',
+    'name'     => $producto['nombre'],
+    'url'      => site_url('productos/' . $producto['uuid']),
+];
+if (!empty($producto['descripcion'])) $productSchema['description'] = strip_tags($producto['descripcion']);
+if (!empty($imgs[0]['url']))          $productSchema['image'] = $imgs[0]['url'];
+$productSchema['brand'] = ['@type' => 'Brand', 'name' => $producto['marca'] ?? SITE_NAME];
+if ($minPrice !== null) {
+    $productSchema['offers'] = [
+        '@type'         => 'AggregateOffer',
+        'priceCurrency' => $moneda,
+        'lowPrice'      => number_format($minPrice / 100, 2, '.', ''),
+        'highPrice'     => number_format(($maxPrice ?? $minPrice) / 100, 2, '.', ''),
+        'availability'  => 'https://schema.org/InStock',
+    ];
+}
+$extraStyles .= "\n" . '<script type="application/ld+json">' . json_encode($productSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
 
 require __DIR__ . '/../components/head.php';
 require __DIR__ . '/../components/header.php';
@@ -233,7 +254,6 @@ $variantes = $producto['variantes'] ?? [];
 
 <?php
 // Inyección scripts SEO body
-$bodyScripts = !empty($seoData['scripts_body']) ? $seoData['scripts_body'] : '';
-$extraScripts = '<script src="' . asset('assets/js/product-detail.js') . '?v=1"></script>' . "\n" . $bodyScripts;
+$extraScripts = '<script src="' . asset('assets/js/product-detail.js') . '?v=1"></script>' . "\n" . $scriptsBody;
 require __DIR__ . '/../components/footer.php';
 ?>

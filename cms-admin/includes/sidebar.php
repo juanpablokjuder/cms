@@ -119,9 +119,25 @@
             </span>
             <span class="sidebar-link-text">FAQs</span>
         </a>
-        <a href="empresa.php" class="sidebar-link <?php echo $cp === 'empresa' ? 'active' : ''; ?>">
-            <span class="sidebar-link-icon">🏢</span>
+        <a href="empresa.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'empresa' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+            </span>
             <span class="sidebar-link-text">Empresa</span>
+        </a>
+        <a href="locales.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'locales' ? 'active' : ''; ?>">
+            <span class="sidebar-link-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                </svg>
+            </span>
+            <span class="sidebar-link-text">Locales</span>
         </a>
         <a href="footer-list.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'footer' ? 'active' : ''; ?>">
             <span class="sidebar-link-icon">
@@ -135,16 +151,15 @@
             </span>
             <span class="sidebar-link-text">Footer</span>
         </a>
-        <a href="seo-paginas.php"
-            class="sidebar-link <?php echo ($currentPage ?? '') === 'seo' ? 'active' : ''; ?>">
+        <a href="seo-paginas.php" class="sidebar-link <?php echo ($currentPage ?? '') === 'seo' ? 'active' : ''; ?>">
             <span class="sidebar-link-icon">
                 <!-- SEO / lupa con engranaje -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    <line x1="11" y1="8" x2="11" y2="14"/>
-                    <line x1="8" y1="11" x2="14" y2="11"/>
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    <line x1="11" y1="8" x2="11" y2="14" />
+                    <line x1="8" y1="11" x2="14" y2="11" />
                 </svg>
             </span>
             <span class="sidebar-link-text">SEO Páginas</span>

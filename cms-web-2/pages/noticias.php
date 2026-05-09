@@ -3,24 +3,25 @@
  * /noticias — Listado de novedades.
  */
 $currentRoute = 'noticias';
-$page         = max(1, (int)($_GET['page'] ?? 1));
-$noticias     = api_noticias($page, NOTICIAS_PER_PAGE);
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$noticias = api_noticias($page, NOTICIAS_PER_PAGE);
+$cmsSeo = api_seo('pagina', 'noticias');
 
-$seo = [
-    'title'       => 'Noticias · ' . SITE_NAME,
+$seo = merge_seo([
+    'title' => 'Noticias · ' . SITE_NAME,
     'description' => 'Novedades, lanzamientos y reviews de smartphones premium. Mantenete al día con ' . SITE_NAME . '.',
-    'url'         => site_url('noticias'),
-];
+    'url' => site_url('noticias'),
+], $cmsSeo);
 
 require __DIR__ . '/../components/head.php';
 require __DIR__ . '/../components/header.php';
 
 $crumbs = [
-    ['label' => 'Inicio',  'href' => '/'],
+    ['label' => 'Inicio', 'href' => '/'],
     ['label' => 'Noticias'],
 ];
 
-$totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
+$totalPages = (int) ($noticias['meta']['totalPages'] ?? 0);
 ?>
 
 <section class="vm-section">
@@ -32,7 +33,8 @@ $totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
             <div>
                 <span class="vm-eyebrow">Novedades</span>
                 <h1 class="text-4xl md:text-5xl">Lanzamientos, análisis y guías</h1>
-                <p class="text-slate-600 mt-3 max-w-2xl">Reviews exhaustivas, comparativas y todo lo que tenés que saber antes de elegir tu próximo smartphone.</p>
+                <p class="text-slate-600 mt-3 max-w-2xl">Reviews exhaustivas, comparativas y todo lo que tenés que saber
+                    antes de elegir tu próximo smartphone.</p>
             </div>
         </div>
 
@@ -41,7 +43,7 @@ $totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
                 <?php foreach ($noticias['data'] as $n):
                     $img = first_image($n['imagenes'] ?? []);
                     $href = '/noticias/' . e($n['slug']);
-                ?>
+                    ?>
                     <article class="vm-news-card vm-reveal">
                         <a href="<?= $href ?>" class="vm-news-card-media" aria-label="<?= e($n['titulo']) ?>">
                             <?php if ($img): ?>
@@ -62,7 +64,11 @@ $totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
                             <?php endif; ?>
                             <a href="<?= $href ?>" class="vm-news-card-cta">
                                 Leer más
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.2">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                </svg>
                             </a>
                         </div>
                     </article>
@@ -76,9 +82,9 @@ $totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
                     <?php endif; ?>
                     <?php
                     $start = max(1, $page - 2);
-                    $end   = min($totalPages, $page + 2);
+                    $end = min($totalPages, $page + 2);
                     for ($i = $start; $i <= $end; $i++):
-                    ?>
+                        ?>
                         <a href="?page=<?= $i ?>" <?= $i === $page ? 'aria-current="page"' : '' ?>><?= $i ?></a>
                     <?php endfor; ?>
                     <?php if ($page < $totalPages): ?>
@@ -89,11 +95,11 @@ $totalPages = (int)($noticias['meta']['totalPages'] ?? 0);
 
         <?php else: ?>
             <?php
-                $title    = 'Aún no publicamos noticias';
-                $message  = 'Volvé pronto. Estamos trabajando en contenido editorial sobre los lanzamientos más importantes.';
-                $ctaLabel = 'Volver al inicio';
-                $ctaHref  = '/';
-                require __DIR__ . '/../components/empty-state.php';
+            $title = 'Aún no publicamos noticias';
+            $message = 'Volvé pronto. Estamos trabajando en contenido editorial sobre los lanzamientos más importantes.';
+            $ctaLabel = 'Volver al inicio';
+            $ctaHref = '/';
+            require __DIR__ . '/../components/empty-state.php';
             ?>
         <?php endif; ?>
     </div>
