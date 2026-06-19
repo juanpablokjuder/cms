@@ -138,17 +138,24 @@ GET /api/v1/web/banners?pagina=home → solo banners de la página "home"
 **Estructura de `data`:** `Banner[]`
 
 ```typescript
+interface BannerBoton {
+  uuid:     string;            // identificador único del botón
+  texto:    string;            // etiqueta visible del botón
+  link:     string;            // URL destino
+  variante: 'primary' | 'outline'; // estilo visual sugerido
+  orden:    number;            // posición del botón (ascendente)
+}
+
 interface Banner {
   uuid:         string;       // identificador único
   pagina:       string;       // nombre de la página a la que pertenece (ej: "home", "about")
   imagen:       string | null; // URL absoluta de la imagen (ej: "http://host/api/v1/archivos/mi-banner-abc")
   imagen_alt:   string | null; // texto alt para accesibilidad
   imagen_title: string | null; // title del elemento imagen
-  h1:           string;       // título principal del banner
-  texto_1:      string | null; // texto secundario / subtítulo
-  texto_2:      string | null; // texto adicional (ej: descripción breve)
-  btn_texto:    string | null; // texto del botón CTA (puede ser null si no hay botón)
-  btn_link:     string | null; // URL destino del botón
+  h1:           string;       // título principal (HTML enriquecido vía Quill)
+  texto_1:      string | null; // texto secundario / subtítulo (HTML Quill)
+  texto_2:      string | null; // texto adicional (HTML Quill)
+  botones:      BannerBoton[]; // lista de botones CTA (puede estar vacía)
   orden:        number;       // posición en el listado (ascendente)
   created_at:   string;       // ISO 8601
   updated_at:   string;
@@ -160,11 +167,12 @@ interface Banner {
 - Si no hay banners creados, `data` es `[]`.
 - Si no hay imagen, `imagen` es `null` → mostrar un banner con fondo de color o un placeholder.
 - El campo `pagina` permite que el admin cargue banners para múltiples páginas. Usar el filtro `?pagina=` para solicitar solo los que corresponden a la página actual.
+- `h1`, `texto_1` y `texto_2` ahora contienen **HTML enriquecido** (Quill). Sanitizar antes de renderizar (ej: `cms_sanitize_html`).
 
 **Casos de presentación:**
-- Banner hero con imagen de fondo, h1, texto_1 y CTA (`btn_texto` + `btn_link`).
+- Banner hero con imagen de fondo, h1, texto_1 y uno o más botones CTA (array `botones`).
 - Carrusel/slider si hay múltiples banners para la misma página.
-- Verificar `btn_texto !== null` antes de renderizar el botón.
+- Recorrer `banner.botones` y renderizar cada uno según su `variante`. Si `botones` está vacío, no mostrar botones.
 
 ---
 

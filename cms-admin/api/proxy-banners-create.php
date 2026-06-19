@@ -5,7 +5,7 @@ if (!isAuthenticated()) { jsonResponse(['success' => false, 'message' => 'No aut
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { jsonResponse(['success' => false, 'message' => 'Método no permitido.'], 405); }
 $input = json_decode(file_get_contents('php://input'), true);
 $data = [];
-foreach (['pagina', 'imagen', 'imagen_alt', 'imagen_title', 'h1', 'texto_1', 'texto_2', 'btn_texto', 'btn_link'] as $field) {
+foreach (['pagina', 'imagen', 'imagen_alt', 'imagen_title', 'h1', 'texto_1', 'texto_2', 'botones'] as $field) {
     if (isset($input[$field])) $data[$field] = $input[$field];
 }
 if (isset($input['orden'])) $data['orden'] = (int) $input['orden'];

@@ -120,8 +120,10 @@ Returned by all banner-related endpoints. The `imagen` field is always a fully-f
   "h1": "Bienvenido a nuestro sitio",
   "texto_1": "El mejor servicio del mercado.",
   "texto_2": null,
-  "btn_texto": "Ver más",
-  "btn_link": "/servicios",
+  "botones": [
+    { "uuid": "c3d4...", "texto": "Ver más", "link": "/servicios", "variante": "primary", "orden": 0 },
+    { "uuid": "d4e5...", "texto": "Contacto", "link": "/contacto", "variante": "outline", "orden": 1 }
+  ],
   "orden": 1,
   "created_at": "2026-04-26T12:00:00.000Z",
   "updated_at": "2026-04-26T12:00:00.000Z"
@@ -133,14 +135,23 @@ Returned by all banner-related endpoints. The `imagen` field is always a fully-f
 | `uuid`       | `string`         | UUID v4, used as public identifier                                    |
 | `pagina`     | `string`         | Page slug where the banner appears (max 100 chars)                    |
 | `imagen`     | `string \| null` | URL path to the image: `/api/v1/archivos/<slug>`, or `null`         |
-| `h1`         | `string`         | Main heading text (max 255 chars)                                     |
-| `texto_1`    | `string \| null` | First body text block                                                 |
-| `texto_2`    | `string \| null` | Second body text block                                                |
-| `btn_texto`  | `string \| null` | Button label (max 100 chars)                                          |
-| `btn_link`   | `string \| null` | Button URL (max 500 chars)                                            |
+| `h1`         | `string`         | Main heading text (HTML enriquecido vía Quill, max 65535 chars)       |
+| `texto_1`    | `string \| null` | First body text block (HTML enriquecido vía Quill)                    |
+| `texto_2`    | `string \| null` | Second body text block (HTML enriquecido vía Quill)                   |
+| `botones`    | `BannerBoton[]`  | Lista ordenada de botones CTA (puede estar vacía). Ver abajo.         |
 | `orden`      | `number`         | Display order (ascending, zero-based)                                 |
 | `created_at` | `string`         | ISO 8601 datetime                                                     |
 | `updated_at` | `string`         | ISO 8601 datetime                                                     |
+
+#### `BannerBoton` object
+
+| Field      | Type      | Notes                                                  |
+| ---------- | --------- | ------------------------------------------------------ |
+| `uuid`     | `string`  | UUID v4 del botón                                      |
+| `texto`    | `string`  | Etiqueta del botón (max 100 chars)                     |
+| `link`     | `string`  | URL destino (max 500 chars)                            |
+| `variante` | `string`  | `primary` o `outline` (estilo visual)                  |
+| `orden`    | `number`  | Orden de display (ascendente, base cero)               |
 
 ### `JwtPayload` (decoded token)
 
@@ -734,8 +745,9 @@ Returns a paginated list of all banners, ordered by `orden ASC`.
         "h1": "Bienvenido a nuestro sitio",
         "texto_1": "El mejor servicio del mercado.",
         "texto_2": null,
-        "btn_texto": "Ver más",
-        "btn_link": "/servicios",
+        "botones": [
+          { "uuid": "c3d4...", "texto": "Ver más", "link": "/servicios", "variante": "primary", "orden": 0 }
+        ],
         "orden": 1,
         "created_at": "2026-04-26T12:00:00.000Z",
         "updated_at": "2026-04-26T12:00:00.000Z"
@@ -778,8 +790,10 @@ Creates a new banner. If `imagen` is provided, a new `Archivo` record is automat
   "h1": "Bienvenido a nuestro sitio",
   "texto_1": "El mejor servicio del mercado.",
   "texto_2": null,
-  "btn_texto": "Ver más",
-  "btn_link": "/servicios",
+  "botones": [
+    { "texto": "Ver más", "link": "/servicios", "variante": "primary", "orden": 0 },
+    { "texto": "Contacto", "link": "/contacto", "variante": "outline", "orden": 1 }
+  ],
   "orden": 1
 }
 ```
@@ -790,11 +804,10 @@ Creates a new banner. If `imagen` is provided, a new `Archivo` record is automat
 | `imagen`      | `string`         | No       | Base64 data URI. Accepted: `png`, `jpg`, `webp`, `gif`, `svg` |
 | `imagen_alt`  | `string \| null` | No       | Alt text for the image archivo (max 255 chars)         |
 | `imagen_title`| `string \| null` | No       | Title for the image archivo (max 255 chars)            |
-| `h1`          | `string`         | Yes      | Max 255 characters                                     |
-| `texto_1`     | `string \| null` | No       | Long text (up to 65 535 chars)                         |
-| `texto_2`     | `string \| null` | No       | Long text (up to 65 535 chars)                         |
-| `btn_texto`   | `string \| null` | No       | Button label (max 100 chars)                           |
-| `btn_link`    | `string \| null` | No       | Button URL (max 500 chars)                             |
+| `h1`          | `string`         | Yes      | HTML Quill (max 65 535 chars)                          |
+| `texto_1`     | `string \| null` | No       | HTML Quill (up to 65 535 chars)                        |
+| `texto_2`     | `string \| null` | No       | HTML Quill (up to 65 535 chars)                        |
+| `botones`     | `BannerBoton[]`  | No       | Hasta 10 botones. Cada uno: `texto`, `link`, `variante` (`primary`/`outline`), `orden` |
 | `orden`       | `integer`        | No       | ≥ 0, defaults to `0`                                 |
 
 **Success `201`:** Returns a `PublicBanner` object with `"message": "Banner created successfully."`.
@@ -859,8 +872,9 @@ If `imagen` is provided, a **new** `Archivo` is created, the banner's FK is upda
   "h1": "Quiénes somos",
   "texto_1": "Un equipo apasionado.",
   "texto_2": null,
-  "btn_texto": null,
-  "btn_link": null,
+  "botones": [
+    { "texto": "Ver más", "link": "/servicios", "variante": "primary", "orden": 0 }
+  ],
   "orden": 2
 }
 ```
@@ -871,11 +885,10 @@ If `imagen` is provided, a **new** `Archivo` is created, the banner's FK is upda
 | `imagen`      | `string`         | Base64 data URI. Triggers new archivo creation + old archivo soft-delete |
 | `imagen_alt`  | `string \| null` | Alt text for the new imagen archivo                    |
 | `imagen_title`| `string \| null` | Title for the new imagen archivo                       |
-| `h1`          | `string`         | Max 255 characters                                     |
-| `texto_1`     | `string \| null` | Long text (up to 65 535 chars)                         |
-| `texto_2`     | `string \| null` | Long text (up to 65 535 chars)                         |
-| `btn_texto`   | `string \| null` | Button label (max 100 chars)                           |
-| `btn_link`    | `string \| null` | Button URL (max 500 chars)                             |
+| `h1`          | `string`         | HTML Quill (max 65 535 chars)                          |
+| `texto_1`     | `string \| null` | HTML Quill (up to 65 535 chars)                        |
+| `texto_2`     | `string \| null` | HTML Quill (up to 65 535 chars)                        |
+| `botones`     | `BannerBoton[]`  | Si se envía, **reemplaza** todos los botones (sync). Omitir para no tocarlos. Hasta 10. |
 | `orden`       | `integer`        | ≥ 0                                                   |
 
 **Success `200`:** Returns updated `PublicBanner` with `"message": "Banner updated successfully."`.

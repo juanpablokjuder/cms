@@ -7,7 +7,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $uuid = trim($input['uuid'] ?? '');
 if (empty($uuid)) { jsonResponse(['success' => false, 'message' => 'UUID es requerido.'], 422); }
 $data = [];
-foreach (['pagina', 'imagen', 'imagen_alt', 'imagen_title', 'h1', 'texto_1', 'texto_2', 'btn_texto', 'btn_link'] as $field) {
+foreach (['pagina', 'imagen', 'imagen_alt', 'imagen_title', 'h1', 'texto_1', 'texto_2', 'botones'] as $field) {
     if (array_key_exists($field, $input)) $data[$field] = $input[$field];
 }
 if (isset($input['orden'])) $data['orden'] = (int) $input['orden'];

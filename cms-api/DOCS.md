@@ -127,6 +127,8 @@ Las migraciones se ejecutan en orden numérico con el comando `npm run migrate`.
 | `007_create_nosotros.sql`       | Tabla `nosotros` (singleton) + pivot `nosotros_imagenes` |
 | `008_create_monedas.sql`        | Tabla `monedas` con registros semilla (ARS, EUR, USD)    |
 | `009_create_servicios.sql`      | Tablas `servicios`, `servicios_categorias`, `servicios_items`, `servicio_item_imagenes` |
+| `017_alter_banners_h1_to_text.sql` | Cambia `banners.h1` de `VARCHAR(255)` a `TEXT` (soporte HTML Quill)   |
+| `018_create_banner_botones.sql` | Tabla `banner_botones` (1:N), migra `btn_texto`/`btn_link` y elimina esas columnas |
 
 ### Esquema Resumido
 
@@ -143,7 +145,14 @@ Las migraciones se ejecutan en orden numérico con el comando `npm run migrate`.
 **`banners`**
 - `pagina` — identificador de la página a la que pertenece el banner
 - `id_imagen` — FK a `archivos.id` (nullable, ON DELETE SET NULL)
+- `h1`, `texto_1`, `texto_2` — `TEXT`, contienen HTML enriquecido (Quill)
 - `orden` — orden de presentación (SMALLINT UNSIGNED)
+
+**`banner_botones`** (1:N con `banners`)
+- `banner_id` — FK a `banners.id` (ON DELETE CASCADE)
+- `texto`, `link` — etiqueta y URL del botón CTA
+- `variante` — ENUM: `primary` | `outline`
+- `orden` — orden de presentación del botón dentro del banner
 
 ---
 
@@ -206,6 +215,8 @@ Las migraciones se ejecutan en orden numérico con el comando `npm run migrate`.
 - Al actualizar, si se provee una nueva `imagen`, se crea un nuevo archivo; el antiguo se **soft-elimina**.
 - El campo `pagina` identifica a qué página del sitio pertenece el banner.
 - El campo `orden` controla el orden de presentación.
+- **Botones (`banner_botones`):** un banner puede tener N botones (CTA). Se envían como array `botones` en el body. En `create` se insertan; en `update`, si el array está presente, **reemplaza por completo** los botones existentes (sync delete+insert); si se omite, no se tocan. Máximo 10 por banner. Cada botón tiene `texto`, `link`, `variante` (`primary`/`outline`) y `orden`.
+- Los campos legacy `btn_texto`/`btn_link` fueron eliminados de la tabla `banners` (migración 018) y migrados como primer botón.
 
 ---
 

@@ -3,6 +3,22 @@ import { z } from 'zod';
 const dataUriRegex =
   /^data:(image\/(?:png|jpeg|webp|gif|svg\+xml));base64,([A-Za-z0-9+/]+=*)$/;
 
+/** Schema de un botón individual del banner. */
+export const bannerBotonSchema = z.object({
+  texto: z
+    .string({ required_error: 'El texto del botón es obligatorio.' })
+    .trim()
+    .min(1, 'El texto del botón no puede estar vacío.')
+    .max(100, 'El texto del botón no puede superar los 100 caracteres.'),
+  link: z
+    .string({ required_error: 'El enlace del botón es obligatorio.' })
+    .trim()
+    .min(1, 'El enlace del botón no puede estar vacío.')
+    .max(500, 'El enlace del botón no puede superar los 500 caracteres.'),
+  variante: z.enum(['primary', 'outline']).default('primary'),
+  orden: z.number().int().min(0).default(0),
+});
+
 export const createBannerSchema = z.object({
   pagina: z
     .string({ required_error: 'Pagina is required.' })
@@ -44,19 +60,8 @@ export const createBannerSchema = z.object({
     .nullable()
     .optional(),
 
-  btn_texto: z
-    .string()
-    .trim()
-    .max(100, 'Btn_texto cannot exceed 100 characters.')
-    .nullable()
-    .optional(),
-
-  btn_link: z
-    .string()
-    .trim()
-    .max(500, 'Btn_link cannot exceed 500 characters.')
-    .nullable()
-    .optional(),
+  /** Lista de botones (call-to-action) del banner. Opcional. */
+  botones: z.array(bannerBotonSchema).max(10, 'Máximo 10 botones por banner.').optional(),
 
   orden: z
     .number()
@@ -66,3 +71,4 @@ export const createBannerSchema = z.object({
 });
 
 export type CreateBannerDTO = z.infer<typeof createBannerSchema>;
+export type BannerBotonDTO = z.infer<typeof bannerBotonSchema>;

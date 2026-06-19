@@ -1,9 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
 import { db } from '../../database/connection.js';
 import { AppError } from '../../shared/utils/app-error.js';
 import { env } from '../../config/env.js';
 import type { UpsertResult } from '../../database/connection.js';
 import type {
   BannerRow,
+  BannerBotonItem,
+  BannerBotonRow,
   PaginatedResult,
   PaginationOptions,
   PublicBanner,
@@ -18,7 +21,9 @@ function buildImagenUrl(slug: string | null): string | null {
 }
 
 /** Intermediate query row that includes the joined archivo fields. */
-interface BannerQueryRow extends Omit<PublicBanner, 'imagen' | 'imagen_alt' | 'imagen_title'> {
+interface BannerQueryRow
+  extends Omit<PublicBanner, 'imagen' | 'imagen_alt' | 'imagen_title' | 'botones'> {
+  id:           number;
   imagen_slug:  string | null;
   imagen_alt:   string | null;
   imagen_title: string | null;
@@ -26,9 +31,8 @@ interface BannerQueryRow extends Omit<PublicBanner, 'imagen' | 'imagen_alt' | 'i
 
 /** Common SELECT for banner queries (LEFT JOIN archivos for imagen_slug). */
 const SELECT_BANNERS = `
-  b.uuid, b.pagina, b.h1, b.texto_1, b.texto_2,
-  b.btn_texto, b.btn_link, b.orden,
-  b.created_at, b.updated_at,
+  b.id, b.uuid, b.pagina, b.h1, b.texto_1, b.texto_2,
+  b.orden, b.created_at, b.updated_at,
   a.slug  AS imagen_slug,
   a.alt   AS imagen_alt,
   a.title AS imagen_title
@@ -36,17 +40,53 @@ FROM banners b
 LEFT JOIN archivos a ON a.id = b.id_imagen AND a.deleted_at IS NULL
 `.trim();
 
-function mapRow(row: BannerQueryRow): PublicBanner {
-  const { imagen_slug, imagen_alt, imagen_title, ...rest } = row;
+function mapRow(row: BannerQueryRow, botones: BannerBotonItem[]): PublicBanner {
+  const { id: _id, imagen_slug, imagen_alt, imagen_title, ...rest } = row;
   return {
     ...rest,
     imagen:       buildImagenUrl(imagen_slug),
     imagen_alt:   imagen_alt   ?? null,
     imagen_title: imagen_title ?? null,
+    botones,
   };
 }
 
 export class BannerRepository {
+  /**
+   * Carga los botones de un conjunto de banners (por sus ids internos) en una
+   * sola consulta, devueltos agrupados por banner_id.
+   */
+  private async loadBotonesByBannerIds(
+    bannerIds: number[],
+  ): Promise<Map<number, BannerBotonItem[]>> {
+    const grouped = new Map<number, BannerBotonItem[]>();
+    if (bannerIds.length === 0) return grouped;
+
+    const placeholders = bannerIds.map(() => '?').join(', ');
+    const rows = await db.query<BannerBotonRow[]>(
+      `SELECT banner_id, uuid, texto, link, variante, orden
+         FROM banner_botones
+        WHERE banner_id IN (${placeholders})
+        ORDER BY orden ASC, id ASC`,
+      bannerIds,
+    );
+
+    for (const r of rows) {
+      const item: BannerBotonItem = {
+        uuid:     r.uuid,
+        texto:    r.texto,
+        link:     r.link,
+        variante: r.variante,
+        orden:    r.orden,
+      };
+      const list = grouped.get(r.banner_id);
+      if (list) list.push(item);
+      else grouped.set(r.banner_id, [item]);
+    }
+
+    return grouped;
+  }
+
   /**
    * Returns a paginated list of active (non-deleted) banners ordered by orden ASC.
    */
@@ -67,8 +107,10 @@ export class BannerRepository {
       [limit, offset],
     );
 
+    const botonesByBanner = await this.loadBotonesByBannerIds(rows.map((r) => r.id));
+
     return {
-      data: rows.map(mapRow),
+      data: rows.map((r) => mapRow(r, botonesByBanner.get(r.id) ?? [])),
       meta: {
         total,
         page,
@@ -84,22 +126,21 @@ export class BannerRepository {
    * Usado por el módulo web.
    */
   async findAllActiveForWeb(pagina?: string): Promise<PublicBanner[]> {
-    if (pagina) {
-      const rows = await db.query<BannerQueryRow[]>(
-        `SELECT ${SELECT_BANNERS}
-          WHERE b.deleted_at IS NULL AND b.pagina = ?
-          ORDER BY b.orden ASC, b.created_at DESC`,
-        [pagina],
-      );
-      return rows.map(mapRow);
-    }
+    const rows = pagina
+      ? await db.query<BannerQueryRow[]>(
+          `SELECT ${SELECT_BANNERS}
+            WHERE b.deleted_at IS NULL AND b.pagina = ?
+            ORDER BY b.orden ASC, b.created_at DESC`,
+          [pagina],
+        )
+      : await db.query<BannerQueryRow[]>(
+          `SELECT ${SELECT_BANNERS}
+            WHERE b.deleted_at IS NULL
+            ORDER BY b.orden ASC, b.created_at DESC`,
+        );
 
-    const rows = await db.query<BannerQueryRow[]>(
-      `SELECT ${SELECT_BANNERS}
-        WHERE b.deleted_at IS NULL
-        ORDER BY b.orden ASC, b.created_at DESC`,
-    );
-    return rows.map(mapRow);
+    const botonesByBanner = await this.loadBotonesByBannerIds(rows.map((r) => r.id));
+    return rows.map((r) => mapRow(r, botonesByBanner.get(r.id) ?? []));
   }
 
   /**
@@ -119,7 +160,9 @@ export class BannerRepository {
       throw AppError.notFound('Banner');
     }
 
-    return mapRow(rows[0] as BannerQueryRow);
+    const row = rows[0] as BannerQueryRow;
+    const botonesByBanner = await this.loadBotonesByBannerIds([row.id]);
+    return mapRow(row, botonesByBanner.get(row.id) ?? []);
   }
 
   /**
@@ -129,7 +172,7 @@ export class BannerRepository {
   async findRawByUuid(uuid: string): Promise<BannerRow> {
     const rows = await db.query<BannerRow[]>(
       `SELECT id, uuid, pagina, id_imagen, h1, texto_1, texto_2,
-              btn_texto, btn_link, orden, deleted_at, created_at, updated_at
+              orden, deleted_at, created_at, updated_at
          FROM banners
         WHERE uuid = ?
           AND deleted_at IS NULL
@@ -145,7 +188,8 @@ export class BannerRepository {
   }
 
   /**
-   * Insert a new banner row.
+   * Insert a new banner row. Returns the new internal id so the service can
+   * attach botones inmediatamente.
    */
   async create(data: {
     uuid: string;
@@ -154,14 +198,12 @@ export class BannerRepository {
     h1: string;
     texto_1: string | null;
     texto_2: string | null;
-    btn_texto: string | null;
-    btn_link: string | null;
     orden: number;
-  }): Promise<PublicBanner> {
-    await db.query(
+  }): Promise<number> {
+    const result = await db.query<UpsertResult>(
       `INSERT INTO banners
-         (uuid, pagina, id_imagen, h1, texto_1, texto_2, btn_texto, btn_link, orden)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (uuid, pagina, id_imagen, h1, texto_1, texto_2, orden)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         data.uuid,
         data.pagina,
@@ -169,13 +211,11 @@ export class BannerRepository {
         data.h1,
         data.texto_1,
         data.texto_2,
-        data.btn_texto,
-        data.btn_link,
         data.orden,
       ],
     );
 
-    return this.findByUuid(data.uuid);
+    return Number(result.insertId);
   }
 
   /**
@@ -190,11 +230,9 @@ export class BannerRepository {
       h1: string;
       texto_1: string | null;
       texto_2: string | null;
-      btn_texto: string | null;
-      btn_link: string | null;
       orden: number;
     }>,
-  ): Promise<PublicBanner> {
+  ): Promise<void> {
     const setClauses: string[] = [];
     const params: unknown[] = [];
 
@@ -205,9 +243,7 @@ export class BannerRepository {
       }
     }
 
-    if (setClauses.length === 0) {
-      return this.findByUuid(uuid);
-    }
+    if (setClauses.length === 0) return;
 
     params.push(uuid);
 
@@ -215,8 +251,29 @@ export class BannerRepository {
       `UPDATE banners SET ${setClauses.join(', ')} WHERE uuid = ? AND deleted_at IS NULL`,
       params,
     );
+  }
 
-    return this.findByUuid(uuid);
+  // ─── Botones ──────────────────────────────────────────────────────────────
+
+  /**
+   * Reemplaza por completo los botones de un banner: borra los existentes e
+   * inserta la lista provista. Usado tanto en create como en update (sync).
+   */
+  async replaceBotones(
+    bannerId: number,
+    botones: Array<{ texto: string; link: string; variante: 'primary' | 'outline'; orden: number }>,
+  ): Promise<void> {
+    await db.query('DELETE FROM banner_botones WHERE banner_id = ?', [bannerId]);
+
+    if (botones.length === 0) return;
+
+    for (const b of botones) {
+      await db.query(
+        `INSERT INTO banner_botones (banner_id, uuid, texto, link, variante, orden)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [bannerId, uuidv4(), b.texto, b.link, b.variante, b.orden],
+      );
+    }
   }
 
   /**

@@ -69,12 +69,32 @@ export interface BannerRow {
   h1: string;
   texto_1: string | null;
   texto_2: string | null;
-  btn_texto: string | null;
-  btn_link: string | null;
   orden: number;
   deleted_at: Date | null;
   created_at: Date;
   updated_at: Date;
+}
+
+/** Variante visual del botón (mapea a las clases del frontend). */
+export type BannerBotonVariante = 'primary' | 'outline';
+
+export interface BannerBotonRow {
+  id:        number;
+  banner_id: number;
+  uuid:      string;
+  texto:     string;
+  link:      string;
+  variante:  BannerBotonVariante;
+  orden:     number;
+}
+
+/** Botón individual expuesto dentro de un banner. */
+export interface BannerBotonItem {
+  uuid:     string;
+  texto:    string;
+  link:     string;
+  variante: BannerBotonVariante;
+  orden:    number;
 }
 
 /** Public banner shape — imagen is the full URL derived from the JOIN */
@@ -87,8 +107,7 @@ export interface PublicBanner {
   h1: string;
   texto_1: string | null;
   texto_2: string | null;
-  btn_texto: string | null;
-  btn_link: string | null;
+  botones: BannerBotonItem[];
   orden: number;
   created_at: Date;
   updated_at: Date;

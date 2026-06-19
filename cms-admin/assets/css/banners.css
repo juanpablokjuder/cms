@@ -167,6 +167,93 @@
     }
 }
 
+/* ─── Bloque de botones del banner ────────────────────── */
+.banner-botones-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.banner-botones-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.form-hint {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    margin-top: var(--space-1);
+}
+
+/* Formulario de carga de un botón: fila con texto, enlace, estilo y acción */
+.banner-boton-form {
+    display: grid;
+    grid-template-columns: 1.4fr 1.6fr 0.9fr auto;
+    gap: var(--space-3);
+    align-items: end;
+    padding: var(--space-4);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.banner-boton-form .form-group {
+    margin: 0;
+}
+
+.banner-boton-form-action {
+    display: flex;
+    align-items: flex-end;
+}
+
+.banner-boton-form-action .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .banner-boton-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tabla de datos de botones */
+.banner-botones-table .boton-variante-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: capitalize;
+}
+
+.banner-botones-table .boton-variante-badge.primary {
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+}
+
+.banner-botones-table .boton-variante-badge.outline {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.banner-botones-table .boton-drag-handle {
+    cursor: grab;
+    color: var(--color-text-tertiary);
+    user-select: none;
+}
+
+.banner-botones-empty {
+    padding: var(--space-5);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+}
+
 /* ─── Orden Badge in Table ────────────────────────────── */
 .orden-badge {
     display: inline-flex;

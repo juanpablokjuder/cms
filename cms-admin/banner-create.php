@@ -88,19 +88,10 @@ $pageTitle = 'Nuevo Banner';
                             </div>
                         </div>
 
-                        <!-- Button -->
-                        <div class="banner-form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="banner-btn-texto">Texto del botón</label>
-                                <input type="text" id="banner-btn-texto" class="form-input" placeholder="ej: Ver más"
-                                    maxlength="100">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="banner-btn-link">Enlace del botón</label>
-                                <input type="text" id="banner-btn-link" class="form-input" placeholder="ej: /servicios"
-                                    maxlength="500">
-                            </div>
-                        </div>
+                        <hr style="border:none;border-top:1px solid var(--color-border);margin:var(--space-2) 0">
+
+                        <!-- ── Botones del banner (tabla de datos + carga) ── -->
+                        <?php require __DIR__ . '/includes/banner-botones.php'; ?>
 
                     </div>
                     <div class="card-footer">

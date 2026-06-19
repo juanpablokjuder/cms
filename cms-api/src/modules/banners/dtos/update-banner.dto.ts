@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { bannerBotonSchema } from './create-banner.dto.js';
 
 const dataUriRegex =
   /^data:(image\/(?:png|jpeg|webp|gif|svg\+xml));base64,([A-Za-z0-9+/]+=*)$/;
@@ -49,19 +50,11 @@ export const updateBannerSchema = z.object({
     .nullable()
     .optional(),
 
-  btn_texto: z
-    .string()
-    .trim()
-    .max(100, 'Btn_texto cannot exceed 100 characters.')
-    .nullable()
-    .optional(),
-
-  btn_link: z
-    .string()
-    .trim()
-    .max(500, 'Btn_link cannot exceed 500 characters.')
-    .nullable()
-    .optional(),
+  /**
+   * Lista completa de botones. Si se envía, reemplaza todos los botones
+   * existentes del banner (sync). Si se omite, los botones no se tocan.
+   */
+  botones: z.array(bannerBotonSchema).max(10, 'Máximo 10 botones por banner.').optional(),
 
   orden: z
     .number()

@@ -211,9 +211,10 @@ Cada archivo proxy tiene una responsabilidad única. Todos siguen el mismo patr�
 - **`user-edit.php`:** Formulario de edición parcial. Recibe `?uuid=` como query param. La contraseña es opcional en la edición.
 
 ### Banners (`banners.php`, `banner-create.php`, `banner-edit.php`)
-- **`banners.php`:** Tabla paginada de banners (10 por página) con miniatura de imagen, página y orden. Permite eliminar.
-- **`banner-create.php`:** Formulario para crear un banner. Soporta subida de imagen en base64.
+- **`banners.php`:** Tabla paginada de banners (10 por página) con miniatura de imagen, página y orden. Permite eliminar. El `h1` se muestra como texto plano (se hace `stripHtml` del HTML Quill).
+- **`banner-create.php`:** Formulario para crear un banner. Soporta subida de imagen en base64. `h1`, `texto_1` y `texto_2` se editan con **Quill** (HTML enriquecido).
 - **`banner-edit.php`:** Formulario de edición parcial de banner. Recibe `?uuid=` como query param.
+- **`includes/banner-botones.php`:** Partial reutilizable incluido en create/edit. Contiene el **formulario de carga de botones** (texto + enlace + estilo) y la **tabla de datos de botones** del banner. Permite agregar, reordenar y eliminar varios botones CTA por banner. Los botones se envían como array `botones`.
 
 ### Noticias (`noticias.php`, `noticia-create.php`, `noticia-edit.php`)
 - **`noticias.php`:** Tabla paginada de noticias con título, slug y fecha. Permite eliminar.
@@ -362,6 +363,8 @@ Toggle de tema claro/oscuro, persiste la preferencia en `localStorage`.
 - Lógica de formularios crear/editar banner.
 - Manejo de previsualización de imagen antes de subir.
 - Conversión de imagen seleccionada a base64 para envío a la API.
+- Inicializa 3 editores **Quill** (`h1`, `texto_1`, `texto_2`) con toolbar básica.
+- Contiene el sub-módulo `BannerBotones`: mantiene el array de botones en memoria, renderiza la tabla de datos, valida el formulario de carga y permite agregar/reordenar/eliminar. Expone `getBotones()` y `setBotones()`; los botones viajan en el payload como array `botones`.
 
 ### `servicios.js` — Módulo `Servicios`
 - Inicializa la página `servicios.php` con tres secciones: encabezado singleton, tab categorías e items.

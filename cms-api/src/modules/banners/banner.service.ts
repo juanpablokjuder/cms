@@ -55,17 +55,37 @@ export class BannerService {
       id_imagen = archivo.id;
     }
 
-    return this.repo.create({
-      uuid: uuidv4(),
+    const uuid = uuidv4();
+    const bannerId = await this.repo.create({
+      uuid,
       pagina: dto.pagina,
       id_imagen,
       h1: dto.h1,
       texto_1: dto.texto_1 ?? null,
       texto_2: dto.texto_2 ?? null,
-      btn_texto: dto.btn_texto ?? null,
-      btn_link: dto.btn_link ?? null,
       orden: dto.orden,
     });
+
+    if (dto.botones && dto.botones.length > 0) {
+      await this.repo.replaceBotones(bannerId, this.normalizeBotones(dto.botones));
+    }
+
+    return this.repo.findByUuid(uuid);
+  }
+
+  /**
+   * Asegura que cada botón tenga un `orden` secuencial coherente con la posición
+   * recibida (si el admin no lo envía explícito) y normaliza la variante.
+   */
+  private normalizeBotones(
+    botones: NonNullable<CreateBannerDTO['botones']>,
+  ): Array<{ texto: string; link: string; variante: 'primary' | 'outline'; orden: number }> {
+    return botones.map((b, index) => ({
+      texto:    b.texto,
+      link:     b.link,
+      variante: b.variante,
+      orden:    b.orden ?? index,
+    }));
   }
 
   /**
@@ -75,7 +95,7 @@ export class BannerService {
    */
   async update(uuid: string, dto: UpdateBannerDTO): Promise<PublicBanner> {
     // Ensure the banner actually exists before proceeding.
-    await this.repo.findByUuid(uuid);
+    const current = await this.repo.findRawByUuid(uuid);
 
     const fields: Parameters<BannerRepository['update']>[1] = {};
 
@@ -83,13 +103,9 @@ export class BannerService {
     if (dto.h1 !== undefined) fields.h1 = dto.h1;
     if (dto.texto_1 !== undefined) fields.texto_1 = dto.texto_1 ?? null;
     if (dto.texto_2 !== undefined) fields.texto_2 = dto.texto_2 ?? null;
-    if (dto.btn_texto !== undefined) fields.btn_texto = dto.btn_texto ?? null;
-    if (dto.btn_link !== undefined) fields.btn_link = dto.btn_link ?? null;
     if (dto.orden !== undefined) fields.orden = dto.orden;
 
     if (dto.imagen !== undefined) {
-      const currentBanner = await this.repo.findRawByUuid(uuid);
-
       const archivo = await this.archivoService.create({
         imagen: dto.imagen,
         nombre: dto.imagen_nombre ?? null,
@@ -99,9 +115,9 @@ export class BannerService {
       fields.id_imagen = archivo.id;
 
       // Soft-delete old archivo if it is being replaced
-      if (currentBanner.id_imagen !== null) {
+      if (current.id_imagen !== null) {
         const oldArchivo = await this.archivoService['repo'].findById(
-          currentBanner.id_imagen,
+          current.id_imagen,
         );
         if (oldArchivo) {
           await this.archivoService.delete(oldArchivo.uuid);
@@ -109,7 +125,14 @@ export class BannerService {
       }
     }
 
-    return this.repo.update(uuid, fields);
+    await this.repo.update(uuid, fields);
+
+    // Si se envía la lista de botones, reemplaza por completo los existentes.
+    if (dto.botones !== undefined) {
+      await this.repo.replaceBotones(current.id, this.normalizeBotones(dto.botones));
+    }
+
+    return this.repo.findByUuid(uuid);
   }
 
   /**
