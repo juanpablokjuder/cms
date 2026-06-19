@@ -32,7 +32,7 @@ export const updateBannerSchema = z.object({
     .string()
     .trim()
     .min(1, 'H1 cannot be empty.')
-    .max(255, 'H1 cannot exceed 255 characters.')
+    .max(65535, 'H1 is too long.')
     .optional(),
 
   texto_1: z

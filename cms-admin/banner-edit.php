@@ -20,6 +20,10 @@ if (empty($editUuid)) {
     <?php require_once __DIR__ . '/includes/head.php'; ?>
     <link rel="stylesheet" href="assets/css/banners.css">
     <link rel="stylesheet" href="assets/css/image-input.css">
+    <link rel="stylesheet" href="assets/css/noticias.css">
+    <!-- Quill.js — editor de texto enriquecido (open-source) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.min.js"></script>
 </head>
 
 <body>
@@ -66,25 +70,25 @@ if (empty($editUuid)) {
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="banner-h1">Título principal (H1) <span
-                                    class="required">*</span></label>
-                            <input type="text" id="banner-h1" class="form-input" placeholder="Título del banner"
-                                required maxlength="255">
+                            <label class="form-label">Título principal (H1) <span class="required">*</span></label>
+                            <div class="quill-wrapper" style="border:1px solid var(--color-border);border-radius:var(--radius-md)">
+                                <div id="banner-h1-quill"></div>
+                            </div>
                             <span class="form-error" id="banner-h1-error"></span>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="banner-texto1">Texto 1</label>
-                            <textarea id="banner-texto1" class="form-input" rows="3"
-                                placeholder="Primer bloque de texto (opcional)"
-                                style="height:auto;padding:var(--space-3) var(--space-4)"></textarea>
+                            <label class="form-label">Texto 1</label>
+                            <div class="quill-wrapper" style="border:1px solid var(--color-border);border-radius:var(--radius-md)">
+                                <div id="banner-texto1-quill"></div>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="banner-texto2">Texto 2</label>
-                            <textarea id="banner-texto2" class="form-input" rows="3"
-                                placeholder="Segundo bloque de texto (opcional)"
-                                style="height:auto;padding:var(--space-3) var(--space-4)"></textarea>
+                            <label class="form-label">Texto 2</label>
+                            <div class="quill-wrapper" style="border:1px solid var(--color-border);border-radius:var(--radius-md)">
+                                <div id="banner-texto2-quill"></div>
+                            </div>
                         </div>
 
                         <div class="banner-form-row">

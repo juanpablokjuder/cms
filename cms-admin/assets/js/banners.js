@@ -44,18 +44,19 @@ const Banners = (() => {
         if (!banners || banners.length === 0) { showTableEmpty('No se encontraron banners.'); return; }
 
         tbody.innerHTML = banners.map(b => {
+            const h1Text = stripHtml(b.h1);
             const imgHtml = b.imagen
-                ? `<img src="${esc(b.imagen)}" alt="${esc(b.h1)}" class="banner-thumb" loading="lazy">`
+                ? `<img src="${esc(b.imagen)}" alt="${esc(h1Text)}" class="banner-thumb" loading="lazy">`
                 : `<div class="banner-thumb-empty">🖼️</div>`;
             return `<tr>
                 <td>${imgHtml}</td>
                 <td><span class="badge badge-admin">${esc(b.pagina)}</span></td>
-                <td style="font-weight:var(--font-weight-medium);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.h1)}</td>
+                <td style="font-weight:var(--font-weight-medium);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h1Text)}</td>
                 <td><span class="orden-badge">${b.orden ?? 0}</span></td>
                 <td>
                     <div class="table-actions">
                         <a href="banner-edit.php?uuid=${encodeURIComponent(b.uuid)}" class="btn btn-ghost btn-icon btn-sm" title="Editar" aria-label="Editar banner">✏️</a>
-                        <button class="btn btn-ghost btn-icon btn-sm" onclick="Banners.openDeleteModal('${esc(b.uuid)}','${esc(b.pagina)} — ${esc(b.h1)}')" title="Eliminar" aria-label="Eliminar banner">🗑️</button>
+                        <button class="btn btn-ghost btn-icon btn-sm" onclick="Banners.openDeleteModal('${esc(b.uuid)}','${esc(b.pagina)} — ${esc(h1Text)}')" title="Eliminar" aria-label="Eliminar banner">🗑️</button>
                     </div>
                 </td>
             </tr>`;
@@ -141,6 +142,8 @@ const Banners = (() => {
     }
 
     function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+    function stripHtml(html) { if (!html) return ''; const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
 
     return { init, loadBanners, openDeleteModal, goToPage };
 })();

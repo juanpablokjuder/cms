@@ -2,6 +2,7 @@
  * CMS Admin — Banner Form Handler (Crear & Editar)
  *
  * Usa el componente ImageInput para la gestión de la imagen.
+ * H1, Texto 1 y Texto 2 usan editores Quill (mismo patrón que el resto de secciones).
  * Detecta el modo edición mediante window.BANNER_UUID.
  */
 
@@ -11,6 +12,11 @@ const BannerForm = (() => {
     /** @type {ImageInput|null} */
     let imageInput = null;
 
+    /** @type {object|null} Instancias de Quill: h1, texto1, texto2 */
+    let quillH1 = null;
+    let quillTexto1 = null;
+    let quillTexto2 = null;
+
     const isEdit = () => typeof window.BANNER_UUID === 'string' && window.BANNER_UUID.length > 0;
 
     function el(id) { return document.getElementById(id); }
@@ -18,6 +24,8 @@ const BannerForm = (() => {
     function init() {
         const form = el('banner-form');
         if (!form) return;
+
+        initQuill();
 
         // Inicializar el componente ImageInput en su contenedor
         imageInput = new ImageInput({
@@ -39,6 +47,44 @@ const BannerForm = (() => {
         });
     }
 
+    // ─── Quill ────────────────────────────────────────
+
+    function initQuill() {
+        if (typeof Quill === 'undefined') {
+            console.error('BannerForm: Quill no está disponible.');
+            return;
+        }
+
+        const toolbarBasic = [
+            ['bold', 'italic', 'underline'],
+            [{ color: [] }],
+            ['link'],
+            ['clean'],
+        ];
+
+        quillH1 = new Quill('#banner-h1-quill', {
+            theme: 'snow',
+            placeholder: 'Título del banner',
+            modules: { toolbar: toolbarBasic },
+        });
+        quillH1.on('text-change', () => {
+            const err = el('banner-h1-error');
+            if (err) err.textContent = '';
+        });
+
+        quillTexto1 = new Quill('#banner-texto1-quill', {
+            theme: 'snow',
+            placeholder: 'Primer bloque de texto (opcional)',
+            modules: { toolbar: toolbarBasic },
+        });
+
+        quillTexto2 = new Quill('#banner-texto2-quill', {
+            theme: 'snow',
+            placeholder: 'Segundo bloque de texto (opcional)',
+            modules: { toolbar: toolbarBasic },
+        });
+    }
+
     // ─── Cargar datos del banner (modo edición) ──────
 
     async function loadBanner() {
@@ -49,9 +95,9 @@ const BannerForm = (() => {
             const b = result.data;
 
             el('banner-pagina').value    = b.pagina    || '';
-            el('banner-h1').value        = b.h1        || '';
-            el('banner-texto1').value    = b.texto_1   || '';
-            el('banner-texto2').value    = b.texto_2   || '';
+            if (quillH1)     quillH1.root.innerHTML     = b.h1      || '';
+            if (quillTexto1) quillTexto1.root.innerHTML = b.texto_1 || '';
+            if (quillTexto2) quillTexto2.root.innerHTML = b.texto_2 || '';
             el('banner-btn-texto').value = b.btn_texto || '';
             el('banner-btn-link').value  = b.btn_link  || '';
             el('banner-orden').value     = b.orden ?? 0;
@@ -77,17 +123,18 @@ const BannerForm = (() => {
         clearErrors();
 
         const pagina   = el('banner-pagina').value.trim();
-        const h1       = el('banner-h1').value.trim();
-        const texto1   = el('banner-texto1').value.trim()    || null;
-        const texto2   = el('banner-texto2').value.trim()    || null;
+        const h1       = quillH1     ? quillH1.root.innerHTML.trim()     : '';
+        const h1Text   = quillH1     ? quillH1.getText().trim()          : '';
+        const texto1   = (quillTexto1 && quillTexto1.getText().trim()) ? quillTexto1.root.innerHTML.trim() : null;
+        const texto2   = (quillTexto2 && quillTexto2.getText().trim()) ? quillTexto2.root.innerHTML.trim() : null;
         const btnTexto = el('banner-btn-texto').value.trim() || null;
         const btnLink  = el('banner-btn-link').value.trim()  || null;
         const orden    = parseInt(el('banner-orden').value, 10) || 0;
 
         // Validación de campos obligatorios
         let hasError = false;
-        if (!pagina) { showError('banner-pagina', 'La página es obligatoria.'); hasError = true; }
-        if (!h1)     { showError('banner-h1',     'El título es obligatorio.'); hasError = true; }
+        if (!pagina)  { showError('banner-pagina', 'La página es obligatoria.'); hasError = true; }
+        if (!h1Text)  { showError('banner-h1',     'El título es obligatorio.'); hasError = true; }
         if (hasError) return;
 
         const btn = el('banner-form-submit');

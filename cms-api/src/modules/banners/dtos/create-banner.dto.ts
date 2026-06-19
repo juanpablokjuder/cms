@@ -28,7 +28,7 @@ export const createBannerSchema = z.object({
     .string({ required_error: 'H1 is required.' })
     .trim()
     .min(1, 'H1 cannot be empty.')
-    .max(255, 'H1 cannot exceed 255 characters.'),
+    .max(65535, 'H1 is too long.'),
 
   texto_1: z
     .string()
